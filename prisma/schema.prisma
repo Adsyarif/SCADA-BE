@@ -28,12 +28,13 @@ model Permission {
 
 model UserRolePermission {
   id           String        @id @default(uuid())
-  userRole     UserRole   @relation(fields: [userRoleId], references: [id])
   userRoleId   String
-  permission   Permission @relation(fields: [permissionId], references: [id])
   permissionId String
 
-  @@unique([userRoleId, permissionId])
+  userRole     UserRole   @relation(fields: [userRoleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([userRoleId, permissionId], name: "userRole_permission_unique")
 }
 
 model User {
