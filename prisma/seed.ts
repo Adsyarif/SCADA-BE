@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -44,14 +45,15 @@ async function main() {
     )
   );
 
+  const hashedPassword = await bcrypt.hash('masteradmin@123', 10);
   // Create master admin user
   await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { email: 'masteradmin@scada.com' },
     update: {},
     create: {
       username: 'masteradmin',
-      email: 'admin@example.com',
-      password: 'masteradmin@123',
+      email: 'masteradmin@scada.com',
+      password: hashedPassword,
       phone_number: '+1234567890',
       employee_number: 'ADMIN001',
       userRoleId: masterRole.id,
