@@ -49,31 +49,28 @@ model User {
   created_at DateTime @default(now())
   deleted_at DateTime?
   updated_at DateTime @updatedAt @default(now())
-  token String? @db.VarChar(100)
-
-
-  reportsReceived Report[]  @relation("UserReportTo") 
+  updated_by String?
+  
+  reportsReceived Report[]  @relation("UserReportTo")
   reportsSent     Report[]  @relation("UserReportFrom")
 }
-
 
 
 model Report {
   id String @id @default(uuid())
   reportToId String
   reportTo User @relation("UserReportTo", fields: [reportToId], references: [id])
-  reportFromId String?
-  reportFrom User? @relation("UserReportFrom", fields: [reportFromId], references: [id])
+  reportFromId String
+  reportFrom User @relation("UserReportFrom", fields: [reportFromId], references: [id])
   reportCategoryId String
   reportCategory ReportCategory @relation(fields: [reportCategoryId], references: [id])
   report_description String @db.Text
   created_at DateTime @default(now())
   deleted_at DateTime?
   updated_at DateTime @updatedAt @default(now())
+  updated_by String?
   report_image  String?
 }
-
-
 
 model ReportCategory {
   id String @id @default(uuid())
@@ -81,5 +78,5 @@ model ReportCategory {
   created_at DateTime @default(now())
   deleted_at DateTime?
   updated_at DateTime @updatedAt
-  reports Report[] 
+  reports Report[]
 }
