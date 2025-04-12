@@ -6,8 +6,8 @@ import {
 } from 'src/model/report.model';
 import { Logger } from 'winston';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { PrismaService } from 'prisma/prisma.service';
 import { ReportValidation } from './reports.validation';
+import { PrismaService } from 'src/common/prisma.service';
 
 @Injectable()
 export class ReportService {

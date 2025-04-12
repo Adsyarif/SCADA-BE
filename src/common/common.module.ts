@@ -12,8 +12,17 @@ import { ValidationService } from './validation.service';
       isGlobal: true,
     }),
     WinstonModule.forRoot({
-      format: winston.format.json(),
-      transports: [new winston.transports.Console()],
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.timestamp(),
+            winston.format.printf(({ timestamp, level, message }) => {
+              return `[${timestamp}] ${level}: ${typeof message === 'string' ? message : JSON.stringify(message)}`;
+            }),
+          ),
+        }),
+      ],
     }),
   ],
   providers: [PrismaService, ValidationService],
