@@ -6,11 +6,13 @@ import { UsersModule } from './users/users.module';
 import { UserRoleModule } from './user-role/user-role.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from 'prisma/prisma.service';
+import { ReportsModule } from './reports/reports.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
-    AuthModule, UsersModule, UserRoleModule],
+    AuthModule, UsersModule, UserRoleModule, ReportsModule, CommonModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

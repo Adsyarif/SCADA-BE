@@ -36,6 +36,7 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
+
 -- CreateIndex
 CREATE UNIQUE INDEX "UserRole_roleName_key" ON "UserRole"("roleName");
 
@@ -62,3 +63,4 @@ ALTER TABLE "UserRolePermission" ADD CONSTRAINT "UserRolePermission_permissionId
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_userRoleId_fkey" FOREIGN KEY ("userRoleId") REFERENCES "UserRole"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
