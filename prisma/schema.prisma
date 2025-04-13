@@ -14,14 +14,14 @@ datasource db {
 }
 
 model UserRole {
-  id        String        @id @default(uuid())
+  id        String     @id @default(uuid())
   roleName  String     @unique
   users     User[]
   permissions UserRolePermission[]
 }
 
 model Permission {
-  id            String        @id @default(uuid())
+  id            String      @id @default(uuid())
   permissionName String     @unique
   roles         UserRolePermission[]
 }

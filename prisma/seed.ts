@@ -11,7 +11,12 @@ async function main() {
       { permissionName: 'manage_roles' },
       { permissionName: 'manage_permissions' },
       { permissionName: 'manage_content' },
-      { permissionName: 'view_dashboard' },
+      { permissionName: 'homepage' },
+      { permissionName: 'reporting' },
+      { permissionName: 'Attendance' },
+      { permissionName: 'Schedule' },
+      { permissionName: 'Operator List' },
+
     ],
     skipDuplicates: true,
   });
