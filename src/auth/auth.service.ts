@@ -1,60 +1,36 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';import * as bcrypt from 'bcrypt';
-import { PrismaService } from 'prisma/prisma.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly users: UsersService,
     private readonly jwtService: JwtService,
   ) {}
 
-  // Validate user credentials
   async validateUser(email: string, pass: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-      include: {
-        role: {
-          include: {
-            permissions: {
-              include: {
-                permission: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const user = await this.users.findByEmail(email)
+    if (!user) throw new UnauthorizedException('User not found');
 
-    // Ensure user exists and password matches (assumes user.password exists and is hashed)
-    if (user && user.password && (await bcrypt.compare(pass, user.password))) {
-      // Extract permissions from the user's role
-      const permissions =
-        user.role?.permissions.map(
-          (urp) => urp.permission.permissionName,
-        ) || [];
-      // Omit password from returned user object
-      const { password, ...result } = user;
-      return { ...result, permissions };
+    const match = await bcrypt.compare(pass, user.password);
+    if (!match) throw new UnauthorizedException('Invalid password');
+
+    return {
+      id: user.id,
+      username: user.username,
+      perms: user.role.permissions.map(p => p.permission.permissionName),
     }
-    return null;
-  }
+  };
 
-  // Generate JWT token with user id, email, and permissions
-  async login(user: any) {
+  async login(user: {  id: string, username: string, perms: string[]}) {
     const payload = {
       sub: user.id,
-      email: user.email,
-      permissions: user.permissions,
-    };
+      username: user.username,
+      perms: user.perms,
+    }
     return {
       access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        permissions: user.permissions
-      }
-    };
+    }
   }
 }

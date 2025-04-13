@@ -1,19 +1,16 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private auth: AuthService) {}
+
+  @UseGuards(LocalAuthGuard)
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto): Promise<{ access_token: string }> {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
-    if (!user) {
-      // Do not leak whether email or password was incorrect
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    return this.authService.login(user);
+  async login(@Request() req) {
+    return this.auth.login(req.user);
   }
+
 }
