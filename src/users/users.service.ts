@@ -21,18 +21,24 @@ export class UsersService {
     });
   }
 
-  async findById(id: string): Promise<User & { role: { permissions: { permission: { permissionName: string } }[] } } | null> {
+  async findById(id: string): Promise<User & { role: { id: string, roleName: string, permissions: { permission: { permissionName: string } }[] } } | null> {
     return this.prisma.user.findUnique({
       where: { id },
       include: {
         role: {
-          include: {
+          select: {
+            id: true,
+            roleName: true,
             permissions: {
-              include: { permission: true },
-            },
-          },
-        },
-      },
+              select: {
+                permission: {
+                  select: { permissionName: true}
+                }
+              }
+            }
+          }
+        }
+      }
     });
   }
 }

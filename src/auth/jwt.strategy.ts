@@ -8,7 +8,7 @@ export interface JwtPayload {
   sub: string;
   username: string;
   role: string;
-  perms: string
+  perms: string[];
 }
 
 @Injectable()
@@ -16,7 +16,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
       secretOrKey: jwtConstants.secret,
     });
   }
@@ -26,6 +25,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.sub,
       username: payload.username,
-      permissions: payload.perms };
+      role: payload.role,
+      permissions: payload.perms
+    };
   }
 }
