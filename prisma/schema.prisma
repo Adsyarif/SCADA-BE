@@ -46,13 +46,28 @@ model User {
   employee_number String    @unique
   role            UserRole  @relation(fields: [userRoleId], references: [id])
   userRoleId      String
-  created_at DateTime @default(now())
-  deleted_at DateTime?
-  updated_at DateTime @updatedAt @default(now())
-  updated_by String?
+  created_at      DateTime  @default(now())
+  deleted_at      DateTime?
+  updated_at      DateTime  @updatedAt @default(now())
+  updated_by      String?
   
   reportsReceived Report[]  @relation("UserReportTo")
   reportsSent     Report[]  @relation("UserReportFrom")
+  supervisedBy UserSupervisor[] @relation("SupervisorStaff")
+  supervising UserSupervisor[] @relation("StaffSupervisors")
+  
+}
+
+model UserSupervisor {
+  id            String    @id @default (uuid())
+  staffId       String
+  supervisorId  String
+  staff         User      @relation("StaffSupervisors", fields: [staffId], references: [id])
+  supervisor    User      @relation("SupervisorStaff", fields: [supervisorId], references: [id])
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt @default(now())
+
+  @@unique([staffId, supervisorId], name: "supervisor_staff_unique")
 }
 
 
