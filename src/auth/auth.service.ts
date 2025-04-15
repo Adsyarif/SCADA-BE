@@ -2,6 +2,13 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
 
+export type AuthenticatedUser = {
+  id: string;
+  username: string;
+  role: string;
+  perms: string[];
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -9,7 +16,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string) {
+  async validateUser(email: string, pass: string): Promise<AuthenticatedUser> {
     const user = await this.users.findByEmail(email)
     if (!user) throw new UnauthorizedException('User not found');
 
@@ -19,6 +26,7 @@ export class AuthService {
     return {
       id: user.id,
       username: user.username,
+      role: user.role.roleName,
       perms: user.role.permissions.map(p => p.permission.permissionName),
     }
   };
