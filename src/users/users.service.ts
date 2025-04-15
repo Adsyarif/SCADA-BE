@@ -10,7 +10,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findByEmail(email: string): Promise<User & { role: { permissions: { permission: { permissionName: string } }[] } } | null> {
+  async findByEmail(email: string): Promise<User & { role: { id: string; roleName: string; permissions: { permission: { permissionName: string } }[] } } | null> {
     return this.prisma.user.findUnique({
       where: { email },
       include: {
