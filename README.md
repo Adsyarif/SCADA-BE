@@ -43,6 +43,15 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+## Migrate and seed database
+
+```bash
+# migrate
+$ npx prisma migrate dev --name init
+
+# seed
+$ npm run seed
+
 
 ## Run tests
 
