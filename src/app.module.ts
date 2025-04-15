@@ -8,11 +8,12 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from 'prisma/prisma.service';
 import { ReportsModule } from './reports/reports.module';
 import { CommonModule } from './common/common.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
-    AuthModule, UsersModule, UserRoleModule, ReportsModule, CommonModule],
+    AuthModule, UsersModule, UserRoleModule, ReportsModule, CommonModule, PermissionsModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
