@@ -3,8 +3,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsService } from './permissions.service';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
 import { PermissionDto } from './dto/permissions.dto';
+import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('permissions')
 export class PermissionsController {
     constructor (

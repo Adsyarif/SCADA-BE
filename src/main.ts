@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const PORT = process.env.PORT || 3000;
+const ORIGIN = process.env.ORIGIN
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
