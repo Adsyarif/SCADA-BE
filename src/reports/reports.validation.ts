@@ -6,7 +6,11 @@ export class ReportValidation {
     reportFromId: z.string().min(1).max(100),
     reportCategoryId: z.string().min(1).max(100),
     updatedBy: z.string().min(1).max(100).optional(),
-    reportImage: z.string().min(1).max(255).optional(),
-    reportDescription: z.string().min(1).max(2000),
+    report_image: z.string().min(1).max(255).optional(),
+    report_description: z.string().min(1).max(2000),
+  });
+
+  static readonly GET_REPORT_BY_SENDER_ID: ZodType = z.object({
+    reportTo: z.string().min(1).max(100),
   });
 }

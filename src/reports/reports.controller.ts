@@ -1,10 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
 import { ReportService } from './reports.service';
 import { WebResponse } from 'src/model/web.model';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetSentReportByIdResponse,
 } from 'src/model/report.model';
+import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
 
 @Controller('/api/reports')
 export class ReportController {
@@ -15,6 +17,30 @@ export class ReportController {
     @Body() request: CreateReportRequest,
   ): Promise<WebResponse<CreateReportResponse>> {
     const result = await this.reportService.createReport(request);
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/categories')
+  async getCategory(): Promise<WebResponse<GetReportCategoryResponse[]>> {
+    const result = await this.reportService.getAllReportCategory();
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/get-report-to/:id/:sender')
+  @HttpCode(200)
+  async getSentReportById(
+    @Param('id') id: string,
+    @Param('sender') senderId: string,
+  ): Promise<WebResponse<GetSentReportByIdResponse[]>> {
+    const userId = {
+      reportTo: id,
+      reportFrom: senderId,
+    };
+    const result = await this.reportService.getReportBySenderId(userId);
     return {
       data: result,
     };
