@@ -22,7 +22,7 @@ export class UsersController {
         return this.users.findAll();
     }
 
-    @Get()
+    @Get(':id')
     @Permissions('manage_users')
     @ApiOperation({ summary: 'Get a user by ID' })
     @ApiResponse({ status: 200, description: 'OK' })

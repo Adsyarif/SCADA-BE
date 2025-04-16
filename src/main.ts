@@ -13,6 +13,12 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.enableShutdownHooks;
 
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   // swagger
   const config = new DocumentBuilder()
     .setTitle('SCADA API')
