@@ -1,13 +1,9 @@
-export class CreateUserRequest {
-  username: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  empolyeeNumber: string;
-  userRoleId: string;
+import { User } from '@prisma/client';
+
+export class GetSupervisorRequest {
+  staffId: string;
 }
 
-export class CreateUserResponse {
-  username: string;
-  email: string;
+export class GetSupervisorResponse {
+  supervisor: User;
 }
