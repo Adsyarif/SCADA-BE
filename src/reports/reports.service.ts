@@ -11,7 +11,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ReportValidation } from './reports.validation';
 import { PrismaService } from 'src/common/prisma.service';
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
-import { ReportCategory } from '@prisma/client';
 
 @Injectable()
 export class ReportService {

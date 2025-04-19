@@ -16,7 +16,6 @@ async function main() {
       { permissionName: 'Attendance' },
       { permissionName: 'Schedule' },
       { permissionName: 'Operator List' },
-
     ],
     skipDuplicates: true,
   });
@@ -120,7 +119,47 @@ async function main() {
     },
   });
 
-  console.log('Seeding completed successfully!');
+  const supervisorPassword = await bcrypt.hash('supervisor123', 10);
+  const supervisorUser = await prisma.user.upsert({
+    where: { email: 'supervisor@scada.com' },
+    update: {},
+    create: {
+      username: 'supervisor_user',
+      email: 'supervisor@scada.com',
+      password: supervisorPassword,
+      phone_number: '+6281122334455',
+      employee_number: 'EMP004',
+      userRoleId: userRole.id,
+    },
+  });
+
+  const staffPassword = await bcrypt.hash('staff123', 10);
+  const staffUser = await prisma.user.upsert({
+    where: { email: 'staff@scada.com' },
+    update: {},
+    create: {
+      username: 'staff_user',
+      email: 'staff@scada.com',
+      password: staffPassword,
+      phone_number: '+6285566778899',
+      employee_number: 'EMP005',
+      userRoleId: userRole.id,
+    },
+  });
+
+  await prisma.userSupervisor.upsert({
+    where: {
+      supervisor_staff_unique: {
+        staffId: staffUser.id,
+        supervisorId: supervisorUser.id,
+      },
+    },
+    update: {},
+    create: {
+      staffId: staffUser.id,
+      supervisorId: supervisorUser.id,
+    },
+  });
 }
 
 main()
