@@ -42,14 +42,14 @@ export class UsersController {
     return this.users.findAll();
   }
 
-  @Get()
-  @Permissions('manage_users')
-  @ApiOperation({ summary: 'Get a user by ID' })
-  @ApiResponse({ status: 200, description: 'OK' })
-  @ApiResponse({ status: 404, description: 'Not Found' })
-  findOne(@Param('id') id: string) {
-    return this.users.findOne(id);
-  }
+    @Get(':id')
+    @Permissions('manage_users')
+    @ApiOperation({ summary: 'Get a user by ID' })
+    @ApiResponse({ status: 200, description: 'OK' })
+    @ApiResponse({ status: 404, description: 'Not Found' })
+    findOne(@Param('id') id: string) {
+        return this.users.findOne(id);
+    }
 
   @Post()
   @Permissions('manage_users')
