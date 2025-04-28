@@ -20,7 +20,13 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // swagger
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
+
   const config = new DocumentBuilder()
     .setTitle('SCADA API')
     .setDescription('SCADA API documentation')
