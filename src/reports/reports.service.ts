@@ -3,11 +3,14 @@ import { ValidationService } from '../common/validation.service';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetSentReportByIdRequest,
+  GetSentReportByIdResponse,
 } from 'src/model/report.model';
 import { Logger } from 'winston';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ReportValidation } from './reports.validation';
 import { PrismaService } from 'src/common/prisma.service';
+import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
 
 @Injectable()
 export class ReportService {
@@ -30,9 +33,9 @@ export class ReportService {
         reportToId: createReportRequest.reportToId,
         reportFromId: createReportRequest.reportFromId,
         reportCategoryId: createReportRequest.reportCategoryId,
-        report_description: createReportRequest.reportDescription,
+        report_description: createReportRequest.report_description,
         updated_by: createReportRequest.updatedBy,
-        report_image: createReportRequest.reportImage,
+        report_image: createReportRequest.report_image,
       },
     });
 
@@ -54,5 +57,52 @@ export class ReportService {
     };
 
     return response;
+  }
+
+  async getAllReportCategory(): Promise<GetReportCategoryResponse[]> {
+    const response = await this.prismaService.reportCategory.findMany();
+
+    const categories = response.map((category) => ({
+      reportCategory: category,
+    }));
+
+    return categories;
+  }
+
+  async getReportBySenderId(
+    request: GetSentReportByIdRequest,
+  ): Promise<GetSentReportByIdResponse[]> {
+    this.logger.info(
+      `ReportService.getReportBySenderId (${JSON.stringify(request)})`,
+    );
+
+    const getReportBySenderIdRequest: GetSentReportByIdRequest =
+      this.validationService.validate(
+        ReportValidation.GET_REPORT_BY_SENDER_ID,
+        request,
+      );
+
+    const reports = await this.prismaService.report.findMany({
+      where: {
+        reportToId: getReportBySenderIdRequest.reportTo,
+        reportFromId: getReportBySenderIdRequest.reportFrom,
+      },
+      include: {
+        reportTo: true,
+        reportFrom: true,
+        reportCategory: true,
+      },
+    });
+
+    if (!reports || reports.length === 0) {
+      throw new HttpException('Reports are not found', 404);
+    }
+
+    return reports.map((report) => ({
+      reportFrom: report.reportFrom,
+      create_at: report.created_at,
+      reportCategory: report.reportCategory,
+      reportDescription: report.report_description,
+    }));
   }
 }

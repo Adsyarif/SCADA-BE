@@ -61,6 +61,7 @@ model UserSupervisor {
   supervisor    User      @relation("SupervisorStaff", fields: [supervisorId], references: [id])
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt @default(now())
+  deleted_at      DateTime?
 
   @@unique([staffId, supervisorId], name: "supervisor_staff_unique")
 }

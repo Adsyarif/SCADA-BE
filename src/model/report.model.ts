@@ -1,15 +1,27 @@
-import { User } from '@prisma/client';
+import { ReportCategory, User } from '@prisma/client';
 
 export class CreateReportRequest {
   reportToId: string;
   reportFromId: string;
   reportCategoryId: string;
   updatedBy?: string;
-  reportImage?: string;
-  reportDescription: string;
+  report_image?: string;
+  report_description: string;
 }
 
 export class CreateReportResponse {
   reportTo: User;
   reportFrom: User;
+}
+
+export class GetSentReportByIdRequest {
+  reportTo: string;
+  reportFrom: string;
+}
+
+export class GetSentReportByIdResponse {
+  reportFrom: User;
+  create_at: Date;
+  reportCategory: ReportCategory;
+  reportDescription: string;
 }
