@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+
+import { Body, Controller, Delete, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { UserRoleService } from './user-role.service';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
 import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto'
+import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('User Roles')
@@ -16,36 +18,9 @@ export class UserRoleController {
 
     @Get()
     @Permissions('manage_roles')
-    @ApiOperation({ summary: 'List all user roles' })
-    @ApiResponse({
-      status: 200,
-      description: 'Array of roles with their permissions',
-      schema: {
-        type: 'array',
-        items: {
-          properties: {
-            id: { type: 'string', format: 'uuid' },
-            roleName: { type: 'string' },
-            permissions: {
-              type: 'array',
-              items: {
-                properties: {
-                  permission: {
-                    properties: {
-                      permissionName: { type: 'string' },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    })
-    findAll() {
-        return this.roles.findAll();
-    }
-
+    async findAll(@Query() query: PaginationQueryDto) {
+        return this.roles.findAllPaginated(query);
+      
     @Get(':id')
     @Permissions('manage_roles')
     @ApiOperation({ summary: 'Get a single role by ID' })
