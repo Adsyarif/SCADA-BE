@@ -34,13 +34,13 @@ import { WebResponse } from 'src/model/web.model';
 export class UsersController {
   constructor(private readonly users: UsersService) {}
 
-  @Get()
-  @Permissions('manage_users')
-  @ApiOperation({ summary: 'List all users' })
-  @ApiResponse({ status: 200, description: 'OK' })
-  findAll() {
-    return this.users.findAll();
-  }
+    @Get()
+    @Permissions('manage_users')
+    @ApiOperation({ summary: 'List all users' })
+    @ApiResponse({ status: 200, description: 'OK' })
+    findAll() {
+        return this.users.findAll();
+    }
 
     @Get(':id')
     @Permissions('manage_users')
@@ -51,39 +51,39 @@ export class UsersController {
         return this.users.findOne(id);
     }
 
-  @Post()
-  @Permissions('manage_users')
-  @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({ status: 201, description: 'Created' })
-  create(@Body() dto: CreateUserDto) {
-    return this.users.create(dto);
-  }
+    @Post()
+    @Permissions('manage_users')
+    @ApiOperation({ summary: 'Create a new user' })
+    @ApiResponse({ status: 201, description: 'Created' })
+    create(@Body() dto: CreateUserDto) {
+        return this.users.create(dto);
+    }
 
-  @Put('id')
-  @Permissions('manage_users')
-  @ApiOperation({ summary: 'Update an existing user' })
-  @ApiResponse({ status: 200, description: 'OK' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.users.update(id, dto);
-  }
+    @Put('id')
+    @Permissions('manage_users')
+    @ApiOperation({ summary: 'Update an existing user' })
+    @ApiResponse({ status: 200, description: 'OK' })
+    update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+        return this.users.update(id, dto);
+    }
 
-  @Delete('id')
-  @Permissions('manage_users')
-  @ApiOperation({ summary: 'Delete a user' })
-  @ApiResponse({ status: 204, description: 'No Content' })
-  remove(@Param('id') id: string) {
-    return this.users.remove(id);
-  }
+    @Delete('id')
+    @Permissions('manage_users')
+    @ApiOperation({ summary: 'Delete a user' })
+    @ApiResponse({ status: 204, description: 'No Content' })
+    remove(@Param('id') id: string) {
+        return this.users.remove(id);
+    }
 
-  @Get('/get-supervisor')
-  @Permissions('manage_users')
-  @ApiOperation({ summary: 'Get supervisor of a staff via query' })
-  async getSupervisor(
+    @Get('/get-supervisor')
+    @Permissions('manage_users')
+    @ApiOperation({ summary: 'Get supervisor of a staff via query' })
+    async getSupervisor(
     @Query('staffId') staffId: GetSupervisorRequest,
-  ): Promise<WebResponse<GetSupervisorResponse>> {
+    ): Promise<WebResponse<GetSupervisorResponse>> {
     const result = await this.users.getSupervisor(staffId);
-    return {
-      data: result,
-    };
-  }
+        return {
+            data: result,
+        };
+    }
 }

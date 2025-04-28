@@ -18,7 +18,7 @@ export class UserRoleService {
             },
         })
     }
-
+    
     findOne(id: string) {
         return this.prisma.userRole.findUnique({
             where: { id },
@@ -49,6 +49,7 @@ export class UserRoleService {
             }
         })
     }
+
     update(id: string, dto: UpdateRoleDto) {
         return this.prisma.userRole.update({
           where: { id },
@@ -69,9 +70,9 @@ export class UserRoleService {
         });
       }
 
-      remove(id: string) {
-        return this.prisma.userRole.delete({
-            where: { id },
-        })
-      }
+    remove(id: string) {
+    return this.prisma.userRole.delete({
+        where: { id },
+    })
+    }
 }
