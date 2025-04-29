@@ -86,8 +86,8 @@ export class ReportService {
 
     const reports = await this.prismaService.report.findMany({
       where: {
-        reportToId: getReportBySenderIdRequest.reportTo,
-        reportFromId: getReportBySenderIdRequest.reportFrom,
+        reportToId: getReportBySenderIdRequest.reportToId,
+        reportFromId: getReportBySenderIdRequest.reportFromId,
       },
       include: {
         reportTo: true,
@@ -123,7 +123,7 @@ export class ReportService {
 
     const reports = await this.prismaService.report.findMany({
       where: {
-        reportFromId: getReportsByIdRequest.reportFrom,
+        reportFromId: getReportsByIdRequest.reportFromId,
       },
       include: {
         reportTo: true,

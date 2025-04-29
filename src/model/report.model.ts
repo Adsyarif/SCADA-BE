@@ -15,8 +15,8 @@ export class CreateReportResponse {
 }
 
 export class GetSentReportByIdRequest {
-  reportTo: string;
-  reportFrom: string;
+  reportToId: string;
+  reportFromId: string;
 }
 
 export class GetSentReportByIdResponse {
@@ -27,7 +27,7 @@ export class GetSentReportByIdResponse {
 }
 
 export class GetReportsByIdRequest {
-  reportFrom: string;
+  reportFromId: string;
 }
 
 export class GetReportsByIdResponse {
@@ -37,4 +37,14 @@ export class GetReportsByIdResponse {
   reportDescription: string;
 }
 
-export class GetReportsByFilterRequest {}
+export class GetReportsByFilterRequest {
+  reportFromId: string;
+  reportToName: string;
+}
+
+export class GetReportsByFilterResponse {
+  reportTo: User;
+  create_at: Date;
+  reportCategory: ReportCategory;
+  reportDescription: string;
+}

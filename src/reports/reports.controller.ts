@@ -39,8 +39,8 @@ export class ReportController {
     @Param('sender') senderId: string,
   ): Promise<WebResponse<GetSentReportByIdResponse[]>> {
     const userId = {
-      reportTo: id,
-      reportFrom: senderId,
+      reportToId: id,
+      reportFromId: senderId,
     };
     const result = await this.reportService.getReportBySenderId(userId);
     return {
@@ -54,7 +54,7 @@ export class ReportController {
     @Param('id') id: string,
   ): Promise<WebResponse<GetReportsByIdResponse[]>> {
     const userId: GetReportsByIdRequest = {
-      reportFrom: id,
+      reportFromId: id,
     };
     const result = await this.reportService.getReportById(userId);
 
