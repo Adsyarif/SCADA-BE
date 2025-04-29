@@ -25,3 +25,16 @@ export class GetSentReportByIdResponse {
   reportCategory: ReportCategory;
   reportDescription: string;
 }
+
+export class GetReportsByIdRequest {
+  reportFrom: string;
+}
+
+export class GetReportsByIdResponse {
+  reportTo: User;
+  create_at: Date;
+  reportCategory: ReportCategory;
+  reportDescription: string;
+}
+
+export class GetReportsByFilterRequest {}

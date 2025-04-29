@@ -4,6 +4,8 @@ import { WebResponse } from 'src/model/web.model';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetReportsByIdRequest,
+  GetReportsByIdResponse,
   GetSentReportByIdResponse,
 } from 'src/model/report.model';
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
@@ -41,6 +43,21 @@ export class ReportController {
       reportFrom: senderId,
     };
     const result = await this.reportService.getReportBySenderId(userId);
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/get-report/:id')
+  @HttpCode(200)
+  async getReportsById(
+    @Param('id') id: string,
+  ): Promise<WebResponse<GetReportsByIdResponse[]>> {
+    const userId: GetReportsByIdRequest = {
+      reportFrom: id,
+    };
+    const result = await this.reportService.getReportById(userId);
+
     return {
       data: result,
     };
