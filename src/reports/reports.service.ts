@@ -3,6 +3,8 @@ import { ValidationService } from '../common/validation.service';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetReportsByIdRequest,
+  GetReportsByIdResponse,
   GetSentReportByIdRequest,
   GetSentReportByIdResponse,
 } from 'src/model/report.model';
@@ -100,6 +102,42 @@ export class ReportService {
 
     return reports.map((report) => ({
       reportFrom: report.reportFrom,
+      create_at: report.created_at,
+      reportCategory: report.reportCategory,
+      reportDescription: report.report_description,
+    }));
+  }
+
+  async getReportById(
+    request: GetReportsByIdRequest,
+  ): Promise<GetReportsByIdResponse[]> {
+    this.logger.info(
+      `ReportService.getReportsById (${JSON.stringify(request)})`,
+    );
+
+    const getReportsByIdRequest: GetReportsByIdRequest =
+      this.validationService.validate(
+        ReportValidation.GET_REPORT_BY_ID,
+        request,
+      );
+
+    const reports = await this.prismaService.report.findMany({
+      where: {
+        reportFromId: getReportsByIdRequest.reportFrom,
+      },
+      include: {
+        reportTo: true,
+        reportFrom: true,
+        reportCategory: true,
+      },
+    });
+
+    if (!reports || reports.length === 0) {
+      throw new HttpException('Report are not found', 400);
+    }
+
+    return reports.map((report) => ({
+      reportTo: report.reportTo,
       create_at: report.created_at,
       reportCategory: report.reportCategory,
       reportDescription: report.report_description,
