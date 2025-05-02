@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { PaginationQueryDto } from './dto/pagination-query.dto';
 
 @Injectable()
 export class UserRoleService {
@@ -18,7 +19,7 @@ export class UserRoleService {
             },
         })
     }
-
+    
     findOne(id: string) {
         return this.prisma.userRole.findUnique({
             where: { id },
@@ -49,6 +50,7 @@ export class UserRoleService {
             }
         })
     }
+
     update(id: string, dto: UpdateRoleDto) {
         return this.prisma.userRole.update({
           where: { id },
@@ -74,4 +76,25 @@ export class UserRoleService {
             where: { id },
         })
       }
+    
+    async findAllPaginated(query: PaginationQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const total = await this.prisma.userRole.count();
+
+    const data = await this.prisma.userRole.findMany({
+        skip,
+        take: limit,
+        include: {
+        permissions: { include: { permission: true } },
+        },
+        orderBy: { roleName: 'asc' },
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return { data, total, page, limit, totalPages };
+    }
 }

@@ -50,3 +50,4 @@ export class GetReportsByFilterResponse {
   reportCategory: ReportCategory;
   reportDescription: string;
 }
+

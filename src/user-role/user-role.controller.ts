@@ -1,11 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { UserRoleService } from './user-role.service';
 import { Permissions } from 'src/auth/decorators/permission.decorator';
 import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UpdateRoleDto } from './dto/update-role.dto'
+import { PaginationQueryDto } from './dto/pagination-query.dto';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PaginatedRoleResponse } from './entities/role.entities';
 
 @ApiTags('User Roles')
 @ApiBearerAuth('access_token')
@@ -16,34 +19,26 @@ export class UserRoleController {
 
     @Get()
     @Permissions('manage_roles')
-    @ApiOperation({ summary: 'List all user roles' })
+    @ApiOperation({ summary: 'Get paginated list of user roles' })
+    @ApiQuery({
+      name: 'page',
+      required: false,
+      description: 'Page number (default: 1)',
+      type: Number,
+    })
+    @ApiQuery({
+      name: 'limit',
+      required: false,
+      description: 'Items per page (default: 10)',
+      type: Number,
+    })
     @ApiResponse({
       status: 200,
-      description: 'Array of roles with their permissions',
-      schema: {
-        type: 'array',
-        items: {
-          properties: {
-            id: { type: 'string', format: 'uuid' },
-            roleName: { type: 'string' },
-            permissions: {
-              type: 'array',
-              items: {
-                properties: {
-                  permission: {
-                    properties: {
-                      permissionName: { type: 'string' },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      description: 'Paginated roles',
+      type: PaginatedRoleResponse,
     })
-    findAll() {
-        return this.roles.findAll();
+    async findAll(@Query() query: PaginationQueryDto) {
+        return this.roles.findAllPaginated(query);
     }
 
     @Get(':id')
@@ -69,7 +64,7 @@ export class UserRoleController {
     }
 
     @Put(':id')
-    @Permissions('manage:roles')
+    @Permissions('manage_roles')
     @ApiOperation({ summary: 'Update an existing role' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiBody({ type: UpdateRoleDto })
@@ -82,12 +77,11 @@ export class UserRoleController {
     }
 
     @Delete(':id')
-    @Permissions('manage:roles')
+    @Permissions('manage_roles')
     @ApiOperation({ summary: 'Delete a role' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiResponse({ status: 204, description: 'Role deleted successfully' })
     remove(@Param('id') id: string) {
         return this.roles.remove(id);
     }
-    
-}
+}  

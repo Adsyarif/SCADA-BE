@@ -24,4 +24,8 @@ export class ReportValidation {
     create_at: z.date().optional(),
     reportCategory: z.string().min(1).max(100).optional(),
   });
+
+  static readonly GET_REPORT_BY_ID: ZodType = z.object({
+    reportFrom: z.string().min(1).max(100),
+  });
 }
