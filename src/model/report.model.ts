@@ -39,7 +39,9 @@ export class GetReportsByIdResponse {
 
 export class GetReportsByFilterRequest {
   reportFromId: string;
-  reportToName: string;
+  reportToName?: string;
+  create_at?: Date;
+  reportCategory?: ReportCategory;
 }
 
 export class GetReportsByFilterResponse {

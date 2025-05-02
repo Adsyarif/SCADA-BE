@@ -17,4 +17,11 @@ export class ReportValidation {
   static readonly GET_REPORT_BY_ID: ZodType = z.object({
     reportFromId: z.string().min(1).max(100),
   });
+
+  static readonly GET_REPORT_BY_FILTER: ZodType = z.object({
+    reportFromId: z.string().min(1).max(100),
+    reportToName: z.string().min(1).max(100).optional(),
+    create_at: z.date().optional(),
+    reportCategory: z.string().min(1).max(100).optional(),
+  });
 }

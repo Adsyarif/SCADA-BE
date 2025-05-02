@@ -4,6 +4,8 @@ import { WebResponse } from 'src/model/web.model';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetReportsByFilterRequest,
+  GetReportsByFilterResponse,
   GetReportsByIdRequest,
   GetReportsByIdResponse,
   GetSentReportByIdResponse,
@@ -60,6 +62,18 @@ export class ReportController {
 
     return {
       data: result,
+    };
+  }
+
+  @Get('filter-report')
+  @HttpCode(200)
+  async getReportByFilter(
+    @Body() request: GetReportsByFilterRequest,
+  ): Promise<WebResponse<GetReportsByFilterResponse[]>> {
+    const reports = await this.reportService.getReportByFilter(request);
+
+    return {
+      data: reports,
     };
   }
 }

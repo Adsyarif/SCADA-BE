@@ -3,6 +3,8 @@ import { ValidationService } from '../common/validation.service';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetReportsByFilterRequest,
+  GetReportsByFilterResponse,
   GetReportsByIdRequest,
   GetReportsByIdResponse,
   GetSentReportByIdRequest,
@@ -65,7 +67,8 @@ export class ReportService {
     const response = await this.prismaService.reportCategory.findMany();
 
     const categories = response.map((category) => ({
-      reportCategory: category,
+      categoryId: category.id,
+      categoryName: category.category_name,
     }));
 
     return categories;
@@ -134,6 +137,41 @@ export class ReportService {
 
     if (!reports || reports.length === 0) {
       throw new HttpException('Report are not found', 400);
+    }
+
+    return reports.map((report) => ({
+      reportTo: report.reportTo,
+      create_at: report.created_at,
+      reportCategory: report.reportCategory,
+      reportDescription: report.report_description,
+    }));
+  }
+
+  async getReportByFilter(
+    request: GetReportsByFilterRequest,
+  ): Promise<GetReportsByFilterResponse[]> {
+    this.logger.info(
+      `ReportService.getReportsByFilter (${JSON.stringify(request)})`,
+    );
+
+    const getReportsByFilterRequest: GetReportsByFilterRequest =
+      this.validationService.validate(
+        ReportValidation.GET_REPORT_BY_FILTER,
+        request,
+      );
+
+    const reports = await this.prismaService.report.findMany({
+      where: {
+        reportFromId: getReportsByFilterRequest.reportFromId,
+      },
+      include: {
+        reportCategory: true,
+        reportTo: true,
+      },
+    });
+
+    if (!reports || reports.length === 0) {
+      throw new HttpException('Reports are not found', 400);
     }
 
     return reports.map((report) => ({

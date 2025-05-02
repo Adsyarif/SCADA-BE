@@ -1,5 +1,4 @@
-import { ReportCategory } from '@prisma/client';
-
 export class GetReportCategoryResponse {
-  reportCategory: ReportCategory;
+  categoryId: string;
+  categoryName: string;
 }
