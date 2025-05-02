@@ -1,4 +1,12 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { ReportService } from './reports.service';
 import { WebResponse } from 'src/model/web.model';
 import {
@@ -11,7 +19,10 @@ import {
   GetSentReportByIdResponse,
 } from 'src/model/report.model';
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('/api/reports')
 export class ReportController {
   constructor(private reportService: ReportService) {}
