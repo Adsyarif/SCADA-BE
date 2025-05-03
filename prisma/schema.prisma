@@ -13,11 +13,16 @@ model UserRole {
   roleName  String     @unique
   users     User[]
   permissions UserRolePermission[]
+  created_at DateTime @default(now())
+  deleted_at DateTime?
+  updated_at DateTime @updatedAt @default(now())
+  updated_by String?
 }
 
 model Permission {
   id            String      @id @default(uuid())
-  permissionName String     @unique
+  permissionCode String     @unique
+  permissionName String
   roles         UserRolePermission[]
 }
 
