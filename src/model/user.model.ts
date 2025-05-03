@@ -1,9 +1,17 @@
-import { User } from '@prisma/client';
-
 export class GetSupervisorRequest {
   staffId: string;
 }
 
 export class GetSupervisorResponse {
-  supervisor: User;
+  supervisorId: string;
+  superVisorName: string;
+}
+
+export class GetOperatorRequest {
+  supervisorId: string;
+}
+
+export class GetOperatorResponse {
+  operatorId: string;
+  operatorName: string;
 }

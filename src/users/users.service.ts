@@ -5,11 +5,13 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
+  GetOperatorResponse,
   GetSupervisorRequest,
   GetSupervisorResponse,
 } from 'src/model/user.model';
 import { ValidationService } from 'src/common/validation.service';
 import { UserValidation } from './user.validation';
+import { GetOperatorRequest } from '../model/user.model';
 
 @Injectable()
 export class UsersService {
@@ -140,7 +142,33 @@ export class UsersService {
     }
 
     return {
-      supervisor: supervisor.supervisor,
+      supervisorId: supervisor.supervisor.id,
+      superVisorName: supervisor.supervisor.username,
     };
+  }
+
+  async getOperator(
+    request: GetOperatorRequest,
+  ): Promise<GetOperatorResponse[]> {
+    const getOperatorRequest: GetOperatorRequest =
+      this.validationService.validate(UserValidation.GET_OPERATOR, request);
+
+    const operators = await this.prisma.userSupervisor.findMany({
+      where: {
+        supervisorId: getOperatorRequest.supervisorId,
+      },
+      include: {
+        staff: true,
+        supervisor: true,
+      },
+    });
+    if ((!operators || operators.length) === 0) {
+      throw new HttpException('There is no operator found', 300);
+    }
+
+    return operators.map((operator) => ({
+      operatorId: operator.id,
+      operatorName: operator.staff.username,
+    }));
   }
 }
