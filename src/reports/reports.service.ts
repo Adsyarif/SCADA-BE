@@ -41,23 +41,15 @@ export class ReportService {
         updated_by: createReportRequest.updatedBy,
         report_image: createReportRequest.report_image,
       },
-    });
-
-    const checkReport = await this.prismaService.report.findUnique({
-      where: { id: createReport.id },
       include: {
         reportTo: true,
         reportFrom: true,
       },
     });
 
-    if (!checkReport) {
-      throw new HttpException('Failed to retrieve newly created report', 500);
-    }
-
     const response: CreateReportResponse = {
-      reportTo: checkReport.reportTo,
-      reportFrom: checkReport.reportFrom,
+      reportTo: createReport.reportTo,
+      reportFrom: createReport.reportFrom,
     };
 
     return response;

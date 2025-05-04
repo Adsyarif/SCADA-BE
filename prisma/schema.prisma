@@ -55,6 +55,7 @@ model User {
   reportsSent     Report[]  @relation("UserReportFrom")
   supervisedBy UserSupervisor[] @relation("SupervisorStaff")
   supervising UserSupervisor[] @relation("StaffSupervisors")
+  attendances Attendance[] @relation("UserAttendance")
   
 }
 
@@ -95,4 +96,13 @@ model ReportCategory {
   deleted_at DateTime?
   updated_at DateTime @updatedAt
   reports Report[]
+}
+
+model Attendance {
+  id String @id @default(uuid())
+  staff_id String
+   staff      User     @relation("UserAttendance", fields: [staff_id], references: [id])
+  created_at DateTime @default(now())
+  deleted_at DateTime?
+  updated_at DateTime @updatedAt
 }

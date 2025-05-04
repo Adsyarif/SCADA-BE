@@ -5,28 +5,36 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Create permissions
-  const permissions = await prisma.permission.createMany({
+  await prisma.permission.createMany({
     data: [
-      { permissionCode: 'manage:users',permissionName: 'Manage Users' },
-      { permissionCode: 'manage:roles' ,permissionName: 'Manage Roles' },
-      { permissionCode: 'manage:permissions', permissionName: 'Manage Permissions' },
-      { permissionCode: 'manage:content', permissionName: 'Manage Content'},
+      { permissionCode: 'manage:users', permissionName: 'Manage Users' },
+      { permissionCode: 'manage:roles', permissionName: 'Manage Roles' },
+      {
+        permissionCode: 'manage:permissions',
+        permissionName: 'Manage Permissions',
+      },
+      { permissionCode: 'manage:content', permissionName: 'Manage Content' },
       { permissionCode: 'create:reports', permissionName: 'Manage Reports' },
       { permissionCode: 'manage:settings', permissionName: 'Manage Settings' },
       { permissionCode: 'view:operators', permissionName: 'Daftar Operator' },
       { permissionCode: 'staff:attendance', permissionName: 'Attendance' },
-      { permissionCode: 'manage:rtu-site', permissionName: 'RTU Site Configuration' },
+      {
+        permissionCode: 'manage:rtu-site',
+        permissionName: 'RTU Site Configuration',
+      },
       { permissionCode: 'message', permissionName: 'Message' },
       { permissionCode: 'user:profile', permissionName: 'User Profile' },
       { permissionCode: 'homepage', permissionName: 'Homepage' },
       { permissionCode: 'reporting', permissionName: 'Reporting' },
-      { permissionCode: 'report:attendance', permissionName: 'Attendance Report' },
+      {
+        permissionCode: 'report:attendance',
+        permissionName: 'Attendance Report',
+      },
       { permissionCode: 'manage:schedule', permissionName: 'Schedule' },
     ],
     skipDuplicates: true,
   });
 
-  // Create Master Admin role
   const masterRole = await prisma.userRole.upsert({
     where: { roleName: 'Master Admin' },
     update: {},
@@ -35,15 +43,12 @@ async function main() {
     },
   });
 
-  // Get all permissions
   const allPermissions = await prisma.permission.findMany();
 
-  // Delete existing role permissions (in case of updates)
   await prisma.userRolePermission.deleteMany({
     where: { userRoleId: masterRole.id },
   });
 
-  // Connect all permissions to Master Admin role
   await prisma.$transaction(
     allPermissions.map((permission) =>
       prisma.userRolePermission.create({
@@ -56,7 +61,6 @@ async function main() {
   );
 
   const hashedPassword = await bcrypt.hash('masteradmin@123', 10);
-  // Create master admin user
   await prisma.user.upsert({
     where: { email: 'masteradmin@scada.com' },
     update: {},
@@ -165,6 +169,22 @@ async function main() {
       staffId: staffUser.id,
       supervisorId: supervisorUser.id,
     },
+  });
+
+  await prisma.attendance.createMany({
+    data: [
+      {
+        id: 'attend-001',
+        staff_id: staffUser.id,
+        created_at: new Date('2025-01-01T08:00:00Z'),
+      },
+      {
+        id: 'attend-002',
+        staff_id: staffUser.id,
+        created_at: new Date('2025-01-02T08:05:00Z'),
+      },
+    ],
+    skipDuplicates: true,
   });
 }
 
