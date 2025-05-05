@@ -4,27 +4,50 @@ import {
     ForbiddenException,
     Injectable,
   } from '@nestjs/common';
-  import { Reflector } from '@nestjs/core';
-import { PERMISSION_KEY } from '../decorators/permission.decorator';
+import { PrismaService } from 'prisma/prisma.service';
   
   @Injectable()
   export class PermissionsGuard implements CanActivate {
-    constructor(private reflector: Reflector) {}
+    constructor(private prisma: PrismaService) {}
   
-    canActivate(context: ExecutionContext): Promise<boolean> {
-      const requiredCode = this.reflector.get<string>(PERMISSION_KEY, context.getHandler());
-      if (!requiredCode) {
-        return Promise.resolve(true);
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+       
+      const handler = context.getHandler()
+      const requiredPermission = Reflect.getMetadata('permission', handler)
+
+      if (!requiredPermission) {
+        return true
       }
 
-      const required = context.switchToHttp().getRequest();
-      const user = required.user;
+      const request = context.switchToHttp().getRequest()
+      const user = request.user
 
-      if (!user?.permissions?.includes(requiredCode)) {
-        throw new ForbiddenException(`Missing required permission: ${requiredCode}`);
+      if (!user || !user.userId) {
+        throw new ForbiddenException('User not authenticated')
       }
 
-      return Promise.resolve(true);
-    }
+      const permission = await this.prisma.permission.findUnique({
+        where: { permissionCode: requiredPermission },
+      })
+      .catch(()=> null)
+
+      if (!permission) {
+        throw new ForbiddenException(`Permission ${requiredPermission} not found`)
+      }
+
+
+      const userHasPermission = await this.prisma.userRolePermission
+      .findFirst({
+        where: {
+          id: user.userId,  // Find the user by userId
+          permissionId: permission.id,  // Check if the user has the specific permissionId
+        },
+      })
+      .catch(() => null);
+
+      if(!userHasPermission) {
+        throw new ForbiddenException(`Missing required permission: ${requiredPermission}`)
+      }
+      return true
   }
-  
+}  

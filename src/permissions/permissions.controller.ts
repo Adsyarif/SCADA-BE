@@ -14,7 +14,7 @@ export class PermissionsController {
     ) {}
 
     @Get()
-    @Permissions('manage_roles')
+    @Permissions('manage:roles')
     findAll(): Promise<PermissionDto[]> {
         return this.perms.findAll();
       }
