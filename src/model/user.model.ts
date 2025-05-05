@@ -1,13 +1,17 @@
-export class CreateUserRequest {
-  username: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  empolyeeNumber: string;
-  userRoleId: string;
+export class GetSupervisorRequest {
+  staffId: string;
 }
 
-export class CreateUserResponse {
-  username: string;
-  email: string;
+export class GetSupervisorResponse {
+  supervisorId: string;
+  superVisorName: string;
+}
+
+export class GetOperatorRequest {
+  supervisorId: string;
+}
+
+export class GetOperatorResponse {
+  operatorId: string;
+  operatorName: string;
 }

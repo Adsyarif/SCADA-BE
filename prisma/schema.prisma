@@ -13,11 +13,16 @@ model UserRole {
   roleName  String     @unique
   users     User[]
   permissions UserRolePermission[]
+  created_at DateTime @default(now())
+  deleted_at DateTime?
+  updated_at DateTime @updatedAt @default(now())
+  updated_by String?
 }
 
 model Permission {
   id            String      @id @default(uuid())
-  permissionName String     @unique
+  permissionCode String     @unique
+  permissionName String
   roles         UserRolePermission[]
 }
 
@@ -26,7 +31,7 @@ model UserRolePermission {
   userRoleId   String
   permissionId String
 
-  userRole     UserRole   @relation(fields: [userRoleId], references: [id])
+  userRole     UserRole   @relation(fields: [userRoleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id])
 
   @@unique([userRoleId, permissionId], name: "userRole_permission_unique")
@@ -61,6 +66,7 @@ model UserSupervisor {
   supervisor    User      @relation("SupervisorStaff", fields: [supervisorId], references: [id])
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt @default(now())
+  deleted_at      DateTime?
 
   @@unique([staffId, supervisorId], name: "supervisor_staff_unique")
 }

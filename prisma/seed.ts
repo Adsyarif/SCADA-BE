@@ -7,16 +7,21 @@ async function main() {
   // Create permissions
   const permissions = await prisma.permission.createMany({
     data: [
-      { permissionName: 'manage_users' },
-      { permissionName: 'manage_roles' },
-      { permissionName: 'manage_permissions' },
-      { permissionName: 'manage_content' },
-      { permissionName: 'homepage' },
-      { permissionName: 'reporting' },
-      { permissionName: 'Attendance' },
-      { permissionName: 'Schedule' },
-      { permissionName: 'Operator List' },
-
+      { permissionCode: 'manage:users',permissionName: 'Manage Users' },
+      { permissionCode: 'manage:roles' ,permissionName: 'Manage Roles' },
+      { permissionCode: 'manage:permissions', permissionName: 'Manage Permissions' },
+      { permissionCode: 'manage:content', permissionName: 'Manage Content'},
+      { permissionCode: 'create:reports', permissionName: 'Manage Reports' },
+      { permissionCode: 'manage:settings', permissionName: 'Manage Settings' },
+      { permissionCode: 'view:operators', permissionName: 'Daftar Operator' },
+      { permissionCode: 'staff:attendance', permissionName: 'Attendance' },
+      { permissionCode: 'manage:rtu-site', permissionName: 'RTU Site Configuration' },
+      { permissionCode: 'message', permissionName: 'Message' },
+      { permissionCode: 'user:profile', permissionName: 'User Profile' },
+      { permissionCode: 'homepage', permissionName: 'Homepage' },
+      { permissionCode: 'reporting', permissionName: 'Reporting' },
+      { permissionCode: 'report:attendance', permissionName: 'Attendance Report' },
+      { permissionCode: 'manage:schedule', permissionName: 'Schedule' },
     ],
     skipDuplicates: true,
   });
@@ -120,7 +125,47 @@ async function main() {
     },
   });
 
-  console.log('Seeding completed successfully!');
+  const supervisorPassword = await bcrypt.hash('supervisor123', 10);
+  const supervisorUser = await prisma.user.upsert({
+    where: { email: 'supervisor@scada.com' },
+    update: {},
+    create: {
+      username: 'supervisor_user',
+      email: 'supervisor@scada.com',
+      password: supervisorPassword,
+      phone_number: '+6281122334455',
+      employee_number: 'EMP004',
+      userRoleId: userRole.id,
+    },
+  });
+
+  const staffPassword = await bcrypt.hash('staff123', 10);
+  const staffUser = await prisma.user.upsert({
+    where: { email: 'staff@scada.com' },
+    update: {},
+    create: {
+      username: 'staff_user',
+      email: 'staff@scada.com',
+      password: staffPassword,
+      phone_number: '+6285566778899',
+      employee_number: 'EMP005',
+      userRoleId: userRole.id,
+    },
+  });
+
+  await prisma.userSupervisor.upsert({
+    where: {
+      supervisor_staff_unique: {
+        staffId: staffUser.id,
+        supervisorId: supervisorUser.id,
+      },
+    },
+    update: {},
+    create: {
+      staffId: staffUser.id,
+      supervisorId: supervisorUser.id,
+    },
+  });
 }
 
 main()
