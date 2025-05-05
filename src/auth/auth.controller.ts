@@ -1,7 +1,7 @@
-import { Controller, Post, UseGuards, Request, Get } from '@nestjs/common';
+import { Controller, Post, UseGuards, Request, Get, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from './decorators/jwt-auth.guard';
 import { UsersService } from 'src/users/users.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
@@ -28,8 +28,9 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Request() req) {
-    return this.authService.login(req.user);
+  async login(@Body() LoginDto: LoginDto ) {
+    const user = await this.authService.validateUser(LoginDto.email, LoginDto.password)
+    return this.authService.login(user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -53,16 +54,8 @@ export class AuthController {
       },
     },
   })
-  async me(@Request() req) {
-    const userId = req.user.userId;
-    const user = await this.usersService.findById(userId);
-    return {
-      id: user?.id,
-      username: user?.username,
-      email: user?.email,
-      role: user?.role.roleName,
-      perms: user?.role. permissions.map(p => p.permission.permissionName),
-    };
+  getProfile(@Request() req) {
+    return this.authService.me(req.user.userId);
   }
 
 }

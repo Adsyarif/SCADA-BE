@@ -25,7 +25,7 @@ export class UsersService {
         role: {
           id: string;
           roleName: string;
-          permissions: { permission: { permissionName: string } }[];
+          permissions: { permission: { permissionName: string, permissionCode: string } }[];
         };
       })
     | null
@@ -49,11 +49,15 @@ export class UsersService {
         role: {
           id: string;
           roleName: string;
-          permissions: { permission: { permissionName: string } }[];
+          permissions: { permission: { permissionName: string, permissionCode: string } }[];
         };
       })
     | null
   > {
+    if (!id) {
+      throw new Error('User ID is required');
+    }
+    
     return this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -64,7 +68,7 @@ export class UsersService {
             permissions: {
               select: {
                 permission: {
-                  select: { permissionName: true },
+                  select: { permissionName: true, permissionCode: true },
                 },
               },
             },
