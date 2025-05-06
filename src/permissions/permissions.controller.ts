@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsService } from './permissions.service';
-import { Permissions } from 'src/auth/decorators/permission.decorator';
+import { Permission } from 'src/auth/decorators/permission.decorator';
 import { PermissionDto } from './dto/permissions.dto';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 
@@ -14,7 +14,7 @@ export class PermissionsController {
     ) {}
 
     @Get()
-    @Permissions('manage:roles')
+    @Permission('manage:roles')
     findAll(): Promise<PermissionDto[]> {
         return this.perms.findAll();
       }

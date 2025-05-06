@@ -7,7 +7,7 @@ export type AuthenticatedUser = {
   id: string;
   username: string;
   role: string;
-  perms: string[];
+  permissions: string[];
 }
 
 @Injectable()
@@ -28,7 +28,7 @@ export class AuthService {
       id: user.id,
       username: user.username,
       role: user.role.roleName,
-      perms: user.role.permissions.map(p => p.permission.permissionCode),
+      permissions: user.role.permissions.map(p => p.permission.permissionCode),
     }
   };
 
@@ -37,7 +37,7 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       role: user.role,
-      perms: user.perms,
+      permissions: user.permissions,
     }
     return {
       access_token: this.jwtService.sign(payload),

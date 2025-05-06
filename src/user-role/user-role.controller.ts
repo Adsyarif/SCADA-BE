@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } fro
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { UserRoleService } from './user-role.service';
-import { Permissions } from 'src/auth/decorators/permission.decorator';
+import { Permission } from 'src/auth/decorators/permission.decorator';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { PaginationQueryDto } from './dto/pagination-query.dto';
@@ -18,7 +18,7 @@ export class UserRoleController {
     constructor(private readonly roles: UserRoleService) {}
 
     @Get()
-    @Permissions('manage:roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Get paginated list of user roles' })
     @ApiQuery({
       name: 'page',
@@ -42,7 +42,7 @@ export class UserRoleController {
     }
 
     @Get(':id')
-    @Permissions('manage:roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Get a single role by ID' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiResponse({
@@ -55,7 +55,7 @@ export class UserRoleController {
     }
 
     @Post()
-    @Permissions('manage:roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Create a new role' })
     @ApiBody({ type: CreateRoleDto })
     @ApiResponse({ status: 201, description: 'Role created successfully' })
@@ -64,7 +64,7 @@ export class UserRoleController {
     }
 
     @Put(':id')
-    @Permissions('manage:roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Update an existing role' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiBody({ type: UpdateRoleDto })
@@ -77,7 +77,7 @@ export class UserRoleController {
     }
 
     @Delete(':id')
-    @Permissions('manage:roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Delete a role' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiResponse({ status: 204, description: 'Role deleted successfully' })

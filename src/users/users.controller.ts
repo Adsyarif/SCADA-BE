@@ -12,7 +12,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { UsersService } from './users.service';
-import { Permissions } from 'src/auth/decorators/permission.decorator';
+import { Permission } from 'src/auth/decorators/permission.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
@@ -37,7 +37,7 @@ export class UsersController {
   constructor(private readonly users: UsersService) {}
 
   @Get()
-  @Permissions('manage_users')
+  @Permission('manage:users')
   @ApiOperation({ summary: 'List all users' })
   @ApiResponse({ status: 200, description: 'OK' })
   findAll() {
@@ -45,7 +45,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Permissions('manage_users')
+  @Permission('manage:users')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'OK' })
   @ApiResponse({ status: 404, description: 'Not Found' })
@@ -54,7 +54,7 @@ export class UsersController {
   }
 
   @Post()
-  @Permissions('manage_users')
+  @Permission('manage:users')
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'Created' })
   create(@Body() dto: CreateUserDto) {
@@ -62,7 +62,7 @@ export class UsersController {
   }
 
   @Put('id')
-  @Permissions('manage_users')
+  @Permission('manage_users')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiResponse({ status: 200, description: 'OK' })
   update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
@@ -70,7 +70,7 @@ export class UsersController {
   }
 
   @Delete('id')
-  @Permissions('manage_users')
+  @Permission('manage:users')
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 204, description: 'No Content' })
   remove(@Param('id') id: string) {

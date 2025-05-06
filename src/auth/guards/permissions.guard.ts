@@ -9,45 +9,26 @@ import { PrismaService } from 'prisma/prisma.service';
   @Injectable()
   export class PermissionsGuard implements CanActivate {
     constructor(private prisma: PrismaService) {}
-  
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-       
-      const handler = context.getHandler()
-      const requiredPermission = Reflect.getMetadata('permission', handler)
 
-      if (!requiredPermission) {
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+      const handler = context.getHandler();
+      const requiredPermissions = Reflect.getMetadata('permission', handler)
+
+      if (!requiredPermissions) {
         return true
       }
 
-      const request = context.switchToHttp().getRequest()
-      const user = request.user
+      const request = context.switchToHttp().getRequest();
+      const user = request.user;
 
-      if (!user || !user.userId) {
-        throw new ForbiddenException('User not authenticated')
+      if(!user || !user.permissions) {
+        throw new ForbiddenException('User not Authenticated');
       }
 
-      const permission = await this.prisma.permission.findUnique({
-        where: { permissionCode: requiredPermission },
-      })
-      .catch(()=> null)
-
-      if (!permission) {
-        throw new ForbiddenException(`Permission ${requiredPermission} not found`)
+      if( !user.permissions || !user.permissions.includes(requiredPermissions)) {
+        throw new ForbiddenException(`Misssing required permission: ${requiredPermissions}`);
       }
 
-
-      const userHasPermission = await this.prisma.userRolePermission
-      .findFirst({
-        where: {
-          id: user.userId,  // Find the user by userId
-          permissionId: permission.id,  // Check if the user has the specific permissionId
-        },
-      })
-      .catch(() => null);
-
-      if(!userHasPermission) {
-        throw new ForbiddenException(`Missing required permission: ${requiredPermission}`)
-      }
       return true
-  }
+    }
 }  
