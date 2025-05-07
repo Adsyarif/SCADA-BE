@@ -25,7 +25,7 @@ export class UsersService {
         role: {
           id: string;
           roleName: string;
-          permissions: { permission: { permissionName: string, permissionCode: string } }[];
+          permissions: { permissionName: string, permissionCode: string } [];
         };
       })
     | null
@@ -36,7 +36,10 @@ export class UsersService {
         role: {
           include: {
             permissions: {
-              include: { permission: true },
+              select: {
+                permissionName: true,
+                permissionCode: true,
+               },
             },
           },
         },
@@ -49,7 +52,7 @@ export class UsersService {
         role: {
           id: string;
           roleName: string;
-          permissions: { permission: { permissionName: string, permissionCode: string } }[];
+          permissions: { permissionName: string, permissionCode: string }[];
         };
       })
     | null
@@ -67,9 +70,8 @@ export class UsersService {
             roleName: true,
             permissions: {
               select: {
-                permission: {
-                  select: { permissionName: true, permissionCode: true },
-                },
+                permissionName: true,
+                permissionCode: true,
               },
             },
           },

@@ -41,6 +41,7 @@ model UserRolePermission {
   @@unique([userRoleId, permissionId], name: "userRole_permission_unique")
 }
 
+
 model User {
   id              String    @id @default(uuid())
   username        String    @unique
