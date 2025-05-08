@@ -3,7 +3,6 @@ import { ValidationService } from '../common/validation.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { Logger } from 'winston';
-import * as request from 'supertest';
 import {
   CreateAttendanceRequest,
   CreateAttendanceResponse,
