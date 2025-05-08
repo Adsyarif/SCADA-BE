@@ -11,19 +11,21 @@ datasource db {
 model UserRole {
   id        String     @id @default(uuid())
   roleName  String     @unique
-  users     User[]
-  permissions UserRolePermission[]
   created_at DateTime @default(now())
   deleted_at DateTime?
   updated_at DateTime @updatedAt @default(now())
   updated_by String?
+
+  users     User[]
+  userRolePermissions UserRolePermission[]
 }
 
 model Permission {
   id            String      @id @default(uuid())
   permissionCode String     @unique
   permissionName String
-  roles         UserRolePermission[]
+
+  userRolePermissions  UserRolePermission[]
 }
 
 model UserRolePermission {
@@ -37,6 +39,7 @@ model UserRolePermission {
   @@unique([userRoleId, permissionId], name: "userRole_permission_unique")
 }
 
+
 model User {
   id              String    @id @default(uuid())
   username        String    @unique
@@ -44,7 +47,6 @@ model User {
   password        String
   phone_number    String?
   employee_number String    @unique
-  role            UserRole  @relation(fields: [userRoleId], references: [id])
   userRoleId      String
   created_at      DateTime  @default(now())
   deleted_at      DateTime?
@@ -56,7 +58,9 @@ model User {
   supervisedBy UserSupervisor[] @relation("SupervisorStaff")
   supervising UserSupervisor[] @relation("StaffSupervisors")
   attendances Attendance[] @relation("UserAttendance")
-  
+
+  role            UserRole  @relation(fields: [userRoleId], references: [id])
+  userSites       UserSite[]
 }
 
 model UserSupervisor {
@@ -106,3 +110,32 @@ model Attendance {
   deleted_at DateTime?
   updated_at DateTime @updatedAt
 }
+
+model RtuConfiguration {
+  id          String      @id @default(uuid())
+  rtuName     String      @unique
+  latitude    Float
+  longitude   Float
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt @default(now())
+  deleted_at  DateTime?
+  updated_by  String?
+  
+  userSites   UserSite[]
+}
+
+model UserSite {
+  id         String           @id @default(uuid())
+  userId     String
+  rtuId      String
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt @default(now())
+  deleted_at DateTime?
+  updated_by String?
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rtuConfiguration RtuConfiguration @relation(fields: [rtuId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, rtuId], name: "user_site_unique")
+}
+

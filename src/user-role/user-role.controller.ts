@@ -1,9 +1,9 @@
 
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { UserRoleService } from './user-role.service';
-import { Permissions } from 'src/auth/decorators/permission.decorator';
+import { Permission } from 'src/auth/decorators/permission.decorator';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto'
 import { PaginationQueryDto } from './dto/pagination-query.dto';
@@ -18,7 +18,7 @@ export class UserRoleController {
     constructor(private readonly roles: UserRoleService) {}
 
     @Get()
-    @Permissions('manage_roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Get paginated list of user roles' })
     @ApiQuery({
       name: 'page',
@@ -42,7 +42,7 @@ export class UserRoleController {
     }
 
     @Get(':id')
-    @Permissions('manage_roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Get a single role by ID' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiResponse({
@@ -55,16 +55,16 @@ export class UserRoleController {
     }
 
     @Post()
-    @Permissions('manage_roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Create a new role' })
     @ApiBody({ type: CreateRoleDto })
     @ApiResponse({ status: 201, description: 'Role created successfully' })
-    create(@Body() dto: CreateRoleDto) {
+    create(@Body() dto: CreateRoleDto, ) {
         return this.roles.create(dto);
     }
 
     @Put(':id')
-    @Permissions('manage_roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Update an existing role' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiBody({ type: UpdateRoleDto })
@@ -77,11 +77,11 @@ export class UserRoleController {
     }
 
     @Delete(':id')
-    @Permissions('manage_roles')
+    @Permission('manage:roles')
     @ApiOperation({ summary: 'Delete a role' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiResponse({ status: 204, description: 'Role deleted successfully' })
-    remove(@Param('id') id: string) {
-        return this.roles.remove(id);
+    remove(@Param('id') id: string, @Req() req) {
+        return this.roles.remove(id, req.user.id);
     }
 }  

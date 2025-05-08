@@ -4,8 +4,8 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create permissions
-  await prisma.permission.createMany({
+
+  const permissions = await prisma.permission.createMany({
     data: [
       { permissionCode: 'manage:users', permissionName: 'Manage Users' },
       { permissionCode: 'manage:roles', permissionName: 'Manage Roles' },
@@ -44,6 +44,13 @@ async function main() {
   });
 
   const allPermissions = await prisma.permission.findMany();
+  console.log(allPermissions)
+
+
+  if (allPermissions.length === 0) {
+    console.error("Permissions are not properly created.");
+    return;
+  }
 
   await prisma.userRolePermission.deleteMany({
     where: { userRoleId: masterRole.id },

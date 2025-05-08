@@ -19,7 +19,7 @@ import {
   GetSentReportByIdResponse,
 } from 'src/model/report.model';
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)

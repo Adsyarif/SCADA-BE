@@ -1,12 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'prisma/prisma.service';
 import { UsersService } from 'src/users/users.service';
 
 export type AuthenticatedUser = {
   id: string;
   username: string;
   role: string;
-  perms: string[];
+  permissions: string[];
 }
 
 @Injectable()
@@ -27,19 +28,35 @@ export class AuthService {
       id: user.id,
       username: user.username,
       role: user.role.roleName,
-      perms: user.role.permissions.map(p => p.permission.permissionName),
+      permissions: user.role.permissions.map(p => p.permissionCode),
     }
   };
 
-  async login(user: {  id: string, username: string, role: string, perms: string[]}) {
+  async login(user: AuthenticatedUser) {
     const payload = {
       sub: user.id,
       username: user.username,
       role: user.role,
-      perms: user.perms,
+      permissions: user.permissions,
     }
     return {
       access_token: this.jwtService.sign(payload),
+    }
+  }
+
+  async me(userId: string) {
+    console.log('User ID:', userId);
+    const user = await this.users.findById(userId)
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const permissionCodes = user.role.permissions.map(urp => urp.permissionCode)
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role.roleName,
+      permissions: permissionCodes,
     }
   }
 }
