@@ -16,6 +16,7 @@ export class RtuConfigurationService {
                     rtuName: dto.rtuName,
                     latitude: dto.latitude,
                     longitude: dto.longitude,
+                    radius: dto.radius,
                     updated_by: currentUserId,
                 }
             }) 
@@ -61,6 +62,7 @@ export class RtuConfigurationService {
         if (dto.rtuName != null ) data.rtuName = dto.rtuName
         if (dto.latitude != null ) data.latitude = dto.latitude
         if (dto.longitude != null ) data.longitude = dto.longitude
+        if (dto.radius != null ) data.radius = dto.radius
 
         try {
             return await this.prisma.rtuConfiguration.update({
