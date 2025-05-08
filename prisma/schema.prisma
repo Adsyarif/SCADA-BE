@@ -11,22 +11,21 @@ datasource db {
 model UserRole {
   id        String     @id @default(uuid())
   roleName  String     @unique
-  users     User[]
-  permissions Permission[] @relation("UserRolePermission")
-  userRolePermissions UserRolePermission[]
   created_at DateTime @default(now())
   deleted_at DateTime?
   updated_at DateTime @updatedAt @default(now())
   updated_by String?
+
+  users     User[]
+  userRolePermissions UserRolePermission[]
 }
 
 model Permission {
   id            String      @id @default(uuid())
   permissionCode String     @unique
   permissionName String
-  roles         UserRolePermission[]
-  users         User[]      @relation("UserPermission")
-  userRoles     UserRole[]  @relation("UserRolePermission")
+
+  userRolePermissions  UserRolePermission[]
 }
 
 model UserRolePermission {
@@ -36,10 +35,10 @@ model UserRolePermission {
 
   userRole     UserRole   @relation(fields: [userRoleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id])
-  user         User      @relation("UserRolePermission", fields: [id], references: [id])
 
   @@unique([userRoleId, permissionId], name: "userRole_permission_unique")
 }
+
 
 model User {
   id              String    @id @default(uuid())
@@ -48,7 +47,6 @@ model User {
   password        String
   phone_number    String?
   employee_number String    @unique
-  role            UserRole  @relation(fields: [userRoleId], references: [id])
   userRoleId      String
   created_at      DateTime  @default(now())
   deleted_at      DateTime?
@@ -59,8 +57,7 @@ model User {
   reportsSent     Report[]  @relation("UserReportFrom")
   supervisedBy UserSupervisor[] @relation("SupervisorStaff")
   supervising UserSupervisor[] @relation("StaffSupervisors")
-  permissions Permission[] @relation("UserPermission")
-  userRolePermissions UserRolePermission[] @relation("UserRolePermission")
+  role            UserRole  @relation(fields: [userRoleId], references: [id])
 }
 
 model UserSupervisor {

@@ -28,7 +28,7 @@ export class AuthService {
       id: user.id,
       username: user.username,
       role: user.role.roleName,
-      permissions: user.role.permissions.map(p => p.permission.permissionCode),
+      permissions: user.role.permissions.map(p => p.permissionCode),
     }
   };
 
@@ -50,7 +50,7 @@ export class AuthService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    const permissionCodes = user.role.permissions.map(urp => urp.permission.permissionCode)
+    const permissionCodes = user.role.permissions.map(urp => urp.permissionCode)
     return {
       id: user.id,
       username: user.username,

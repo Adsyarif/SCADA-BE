@@ -1,5 +1,5 @@
 
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { UserRoleService } from './user-role.service';
@@ -59,7 +59,7 @@ export class UserRoleController {
     @ApiOperation({ summary: 'Create a new role' })
     @ApiBody({ type: CreateRoleDto })
     @ApiResponse({ status: 201, description: 'Role created successfully' })
-    create(@Body() dto: CreateRoleDto) {
+    create(@Body() dto: CreateRoleDto, ) {
         return this.roles.create(dto);
     }
 
@@ -81,7 +81,7 @@ export class UserRoleController {
     @ApiOperation({ summary: 'Delete a role' })
     @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
     @ApiResponse({ status: 204, description: 'Role deleted successfully' })
-    remove(@Param('id') id: string) {
-        return this.roles.remove(id);
+    remove(@Param('id') id: string, @Req() req) {
+        return this.roles.remove(id, req.user.id);
     }
 }  

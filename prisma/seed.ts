@@ -4,7 +4,6 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create permissions
   const permissions = await prisma.permission.createMany({
     data: [
       { permissionCode: 'manage:users',permissionName: 'Manage Users' },
@@ -26,7 +25,6 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // Create Master Admin role
   const masterRole = await prisma.userRole.upsert({
     where: { roleName: 'Master Admin' },
     update: {},
@@ -35,15 +33,19 @@ async function main() {
     },
   });
 
-  // Get all permissions
   const allPermissions = await prisma.permission.findMany();
+  console.log(allPermissions)
 
-  // Delete existing role permissions (in case of updates)
+
+  if (allPermissions.length === 0) {
+    console.error("Permissions are not properly created.");
+    return;
+  }
+
   await prisma.userRolePermission.deleteMany({
     where: { userRoleId: masterRole.id },
   });
 
-  // Connect all permissions to Master Admin role
   await prisma.$transaction(
     allPermissions.map((permission) =>
       prisma.userRolePermission.create({
@@ -56,7 +58,6 @@ async function main() {
   );
 
   const hashedPassword = await bcrypt.hash('masteradmin@123', 10);
-  // Create master admin user
   await prisma.user.upsert({
     where: { email: 'masteradmin@scada.com' },
     update: {},
