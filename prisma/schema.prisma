@@ -58,6 +58,7 @@ model User {
   supervisedBy UserSupervisor[] @relation("SupervisorStaff")
   supervising UserSupervisor[] @relation("StaffSupervisors")
   role            UserRole  @relation(fields: [userRoleId], references: [id])
+  userSites       UserSite[]
 }
 
 model UserSupervisor {
@@ -97,4 +98,32 @@ model ReportCategory {
   deleted_at DateTime?
   updated_at DateTime @updatedAt
   reports Report[]
+}
+
+model RtuConfiguration {
+  id          String      @id @default(uuid())
+  rtuName     String      @unique
+  latitude    Float
+  longitude   Float
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt @default(now())
+  deleted_at  DateTime?
+  updated_by  String?
+  
+  userSites   UserSite[]
+}
+
+model UserSite {
+  id         String           @id @default(uuid())
+  userId     String
+  rtuId      String
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt @default(now())
+  deleted_at DateTime?
+  updated_by String?
+
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rtuConfiguration RtuConfiguration @relation(fields: [rtuId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, rtuId], name: "user_site_unique")
 }
