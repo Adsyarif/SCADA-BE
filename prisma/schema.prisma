@@ -57,6 +57,8 @@ model User {
   reportsSent     Report[]  @relation("UserReportFrom")
   supervisedBy UserSupervisor[] @relation("SupervisorStaff")
   supervising UserSupervisor[] @relation("StaffSupervisors")
+  attendances Attendance[] @relation("UserAttendance")
+
   role            UserRole  @relation(fields: [userRoleId], references: [id])
   userSites       UserSite[]
 }
@@ -100,6 +102,15 @@ model ReportCategory {
   reports Report[]
 }
 
+model Attendance {
+  id String @id @default(uuid())
+  staff_id String
+   staff      User     @relation("UserAttendance", fields: [staff_id], references: [id])
+  created_at DateTime @default(now())
+  deleted_at DateTime?
+  updated_at DateTime @updatedAt
+}
+
 model RtuConfiguration {
   id          String      @id @default(uuid())
   rtuName     String      @unique
@@ -127,3 +138,4 @@ model UserSite {
 
   @@unique([userId, rtuId], name: "user_site_unique")
 }
+

@@ -4,22 +4,32 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
+
   const permissions = await prisma.permission.createMany({
     data: [
-      { permissionCode: 'manage:users',permissionName: 'Manage Users' },
-      { permissionCode: 'manage:roles' ,permissionName: 'Manage Roles' },
-      { permissionCode: 'manage:permissions', permissionName: 'Manage Permissions' },
-      { permissionCode: 'manage:content', permissionName: 'Manage Content'},
+      { permissionCode: 'manage:users', permissionName: 'Manage Users' },
+      { permissionCode: 'manage:roles', permissionName: 'Manage Roles' },
+      {
+        permissionCode: 'manage:permissions',
+        permissionName: 'Manage Permissions',
+      },
+      { permissionCode: 'manage:content', permissionName: 'Manage Content' },
       { permissionCode: 'create:reports', permissionName: 'Manage Reports' },
       { permissionCode: 'manage:settings', permissionName: 'Manage Settings' },
       { permissionCode: 'view:operators', permissionName: 'Daftar Operator' },
       { permissionCode: 'staff:attendance', permissionName: 'Attendance' },
-      { permissionCode: 'manage:rtu-site', permissionName: 'RTU Site Configuration' },
+      {
+        permissionCode: 'manage:rtu-site',
+        permissionName: 'RTU Site Configuration',
+      },
       { permissionCode: 'message', permissionName: 'Message' },
       { permissionCode: 'user:profile', permissionName: 'User Profile' },
       { permissionCode: 'homepage', permissionName: 'Homepage' },
       { permissionCode: 'reporting', permissionName: 'Reporting' },
-      { permissionCode: 'report:attendance', permissionName: 'Attendance Report' },
+      {
+        permissionCode: 'report:attendance',
+        permissionName: 'Attendance Report',
+      },
       { permissionCode: 'manage:schedule', permissionName: 'Schedule' },
     ],
     skipDuplicates: true,
@@ -166,6 +176,22 @@ async function main() {
       staffId: staffUser.id,
       supervisorId: supervisorUser.id,
     },
+  });
+
+  await prisma.attendance.createMany({
+    data: [
+      {
+        id: 'attend-001',
+        staff_id: staffUser.id,
+        created_at: new Date('2025-01-01T08:00:00Z'),
+      },
+      {
+        id: 'attend-002',
+        staff_id: staffUser.id,
+        created_at: new Date('2025-01-02T08:05:00Z'),
+      },
+    ],
+    skipDuplicates: true,
   });
 }
 
