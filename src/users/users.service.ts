@@ -12,6 +12,7 @@ import {
 import { ValidationService } from 'src/common/validation.service';
 import { UserValidation } from './user.validation';
 import { GetOperatorRequest } from '../model/user.model';
+import { RoleWithPermissions, UserWithRolePermissions } from './type';
 
 @Injectable()
 export class UsersService {
@@ -20,64 +21,84 @@ export class UsersService {
     private validationService: ValidationService,
   ) {}
 
-  async findByEmail(email: string): Promise<
-    | (User & {
-        role: {
-          id: string;
-          roleName: string;
-          permissions: { permissionName: string, permissionCode: string } [];
-        };
-      })
-    | null
-  > {
-    return this.prisma.user.findUnique({
+  async findByEmail(email: string): Promise<UserWithRolePermissions | null> {
+    const user = await this.prisma.user.findUnique({
       where: { email },
       include: {
         role: {
           include: {
-            permissions: {
-              select: {
-                permissionName: true,
-                permissionCode: true,
-               },
-            },
-          },
-        },
-      },
-    });
+            userRolePermissions: {
+              include: {
+                permission: {
+                  select: {
+                    permissionName: true,
+                    permissionCode: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+    if (!user) {
+      return null
+    }
+
+    const { role: rawRole, userRoleId, ...rest } = user
+
+    const role: RoleWithPermissions= {
+      id: rawRole.id,
+      roleName: rawRole.roleName,
+      permissions: rawRole.userRolePermissions.map((urp) => urp.permission)
+    }
+
+    return {
+      ...rest,
+      role,
+    }
   }
 
-  async findById(id: string): Promise<
-    | (User & {
-        role: {
-          id: string;
-          roleName: string;
-          permissions: { permissionName: string, permissionCode: string }[];
-        };
-      })
-    | null
-  > {
+  async findById(id: string): Promise<UserWithRolePermissions | null> {
+
     if (!id) {
       throw new Error('User ID is required');
     }
     
-    return this.prisma.user.findUnique({
+   
+    const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
         role: {
-          select: {
-            id: true,
-            roleName: true,
-            permissions: {
-              select: {
-                permissionName: true,
-                permissionCode: true,
+          include: {
+            userRolePermissions: {
+              include: {
+                permission: {
+                  select: {
+                    permissionName: true,
+                    permissionCode: true,
+                  },
+                },
               },
             },
           },
         },
       },
     });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    const { role: rawRole, userRoleId, ...rest } = user;
+    const role: RoleWithPermissions = {
+      id: rawRole.id,
+      roleName: rawRole.roleName,
+      permissions: rawRole.userRolePermissions.map((urp) => urp.permission),
+    };
+
+    return {
+      ...rest,
+      role,
+    };
   }
 
   async findAll() {

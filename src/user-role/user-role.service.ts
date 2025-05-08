@@ -5,7 +5,6 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Prisma } from '@prisma/client';
-import { permission } from 'process';
 
 @Injectable()
 export class UserRoleService {
