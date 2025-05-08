@@ -116,6 +116,7 @@ model RtuConfiguration {
   rtuName     String      @unique
   latitude    Float
   longitude   Float
+  radius      Float
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt @default(now())
   deleted_at  DateTime?
