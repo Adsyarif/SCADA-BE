@@ -146,16 +146,34 @@ export class ReportService {
       `ReportService.getReportsByFilter (${JSON.stringify(request)})`,
     );
 
-    const getReportsByFilterRequest: GetReportsByFilterRequest =
-      this.validationService.validate(
-        ReportValidation.GET_REPORT_BY_FILTER,
-        request,
-      );
+    const getReportsByFilterRequest = this.validationService.validate(
+      ReportValidation.GET_REPORT_BY_FILTER,
+      request,
+    );
+
+    const filters: any = {
+      reportFromId: getReportsByFilterRequest.reportFromId,
+    };
+
+    if (getReportsByFilterRequest.reportCategory) {
+      filters.reportCategory = getReportsByFilterRequest.reportCategory;
+    }
+
+    if (getReportsByFilterRequest.create_at) {
+      filters.created_at = new Date(getReportsByFilterRequest.create_at);
+    }
+
+    if (getReportsByFilterRequest.reportToName) {
+      filters.reportTo = {
+        name: {
+          contains: getReportsByFilterRequest.reportToName,
+          mode: 'insensitive',
+        },
+      };
+    }
 
     const reports = await this.prismaService.report.findMany({
-      where: {
-        reportFromId: getReportsByFilterRequest.reportFromId,
-      },
+      where: filters,
       include: {
         reportCategory: true,
         reportTo: true,
@@ -163,7 +181,7 @@ export class ReportService {
     });
 
     if (!reports || reports.length === 0) {
-      throw new HttpException('Reports are not found', 400);
+      throw new HttpException('Reports not found', 404);
     }
 
     return reports.map((report) => ({
