@@ -36,3 +36,9 @@ export class GetAttendanceByFilterResponse {
   staffName: string;
   createDate: string;
 }
+
+export class GetAllAttenndanceResponse {
+  staffId: string;
+  staffName: string;
+  createDate: Date;
+}
