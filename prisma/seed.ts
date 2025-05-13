@@ -1,10 +1,10 @@
+import { UserRolePermission } from './../node_modules/.prisma/client/index.d';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-
   const permissions = await prisma.permission.createMany({
     data: [
       { permissionCode: 'manage:users', permissionName: 'Manage Users' },
@@ -44,11 +44,10 @@ async function main() {
   });
 
   const allPermissions = await prisma.permission.findMany();
-  console.log(allPermissions)
-
+  console.log(allPermissions);
 
   if (allPermissions.length === 0) {
-    console.error("Permissions are not properly created.");
+    console.error('Permissions are not properly created.');
     return;
   }
 
@@ -88,6 +87,17 @@ async function main() {
       roleName: 'Regular User',
     },
   });
+
+  await prisma.$transaction(
+    allPermissions.map((permission) =>
+      prisma.userRolePermission.create({
+        data: {
+          userRoleId: userRole.id,
+          permissionId: permission.id,
+        },
+      }),
+    ),
+  );
 
   const reporterPassword = await bcrypt.hash('reporter123', 10);
   const reporterUser = await prisma.user.upsert({
@@ -192,6 +202,14 @@ async function main() {
       },
     ],
     skipDuplicates: true,
+  });
+
+  const customerRole = await prisma.userRole.upsert({
+    where: { roleName: 'Customer User' },
+    update: {},
+    create: {
+      roleName: 'Customer User',
+    },
   });
 }
 

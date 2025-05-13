@@ -5,13 +5,16 @@ export class CreateReportRequest {
   reportFromId: string;
   reportCategoryId: string;
   updatedBy?: string;
-  report_image?: string;
-  report_description: string;
+  reportImage?: string;
+  reportDescription: string;
 }
 
 export class CreateReportResponse {
-  reportTo: User;
-  reportFrom: User;
+  reportTo: string;
+  reportToId: string;
+  reportFrom: string;
+  reportFromId: string;
+  createAt: Date;
 }
 
 export class GetSentReportByIdRequest {
@@ -50,4 +53,3 @@ export class GetReportsByFilterResponse {
   reportCategory: ReportCategory;
   reportDescription: string;
 }
-

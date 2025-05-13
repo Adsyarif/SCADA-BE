@@ -37,9 +37,9 @@ export class ReportService {
         reportToId: createReportRequest.reportToId,
         reportFromId: createReportRequest.reportFromId,
         reportCategoryId: createReportRequest.reportCategoryId,
-        report_description: createReportRequest.report_description,
+        report_description: createReportRequest.reportDescription,
         updated_by: createReportRequest.updatedBy,
-        report_image: createReportRequest.report_image,
+        report_image: createReportRequest.reportImage,
       },
       include: {
         reportTo: true,
@@ -48,8 +48,11 @@ export class ReportService {
     });
 
     const response: CreateReportResponse = {
-      reportTo: createReport.reportTo,
-      reportFrom: createReport.reportFrom,
+      reportTo: createReport.reportTo.username,
+      reportToId: createReport.reportToId,
+      reportFrom: createReport.reportFrom.username,
+      reportFromId: createReport.reportFromId,
+      createAt: createReport.created_at,
     };
 
     return response;
