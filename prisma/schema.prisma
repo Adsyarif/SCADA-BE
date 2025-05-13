@@ -55,8 +55,8 @@ model User {
   
   reportsReceived Report[]  @relation("UserReportTo")
   reportsSent     Report[]  @relation("UserReportFrom")
-  supervisedBy UserSupervisor[] @relation("SupervisorStaff")
-  supervising UserSupervisor[] @relation("StaffSupervisors")
+  asStaffIn      UserSupervisor[] @relation("UserIsStaff")      
+  asSupervisorIn UserSupervisor[] @relation("UserIsSupervisor")  
   attendances Attendance[] @relation("UserAttendance")
 
   role            UserRole  @relation(fields: [userRoleId], references: [id])
@@ -64,14 +64,15 @@ model User {
 }
 
 model UserSupervisor {
-  id            String    @id @default (uuid())
-  staffId       String
-  supervisorId  String
-  staff         User      @relation("StaffSupervisors", fields: [staffId], references: [id])
-  supervisor    User      @relation("SupervisorStaff", fields: [supervisorId], references: [id])
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt @default(now())
-  deleted_at      DateTime?
+   id           String    @id @default(uuid())
+  staffId      String
+  supervisorId String
+  deleted_at   DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt @default(now())
+
+  staff        User      @relation("UserIsStaff", fields: [staffId], references: [id])
+  supervisor   User      @relation("UserIsSupervisor", fields: [supervisorId], references: [id])
 
   @@unique([staffId, supervisorId], name: "supervisor_staff_unique")
 }

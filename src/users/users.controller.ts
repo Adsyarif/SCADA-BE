@@ -44,6 +44,30 @@ export class UsersController {
     return this.users.findAll();
   }
 
+  @Get('/get-supervisor')
+  async getSupervisor(
+    @Query('staffId') staffId: string,
+  ): Promise<WebResponse<GetSupervisorResponse>> {
+    const staffIdRequest: GetSupervisorRequest = {
+      staffId: staffId,
+    };
+    const result = await this.users.getSupervisor(staffIdRequest);
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/get-operators')
+  @ApiOperation({ summary: 'Get operator of a staff via query' })
+  async getOperators(
+    @Query('supervisorId') supervisorId: GetOperatorRequest,
+  ): Promise<WebResponse<GetOperatorResponse[]>> {
+    const result = await this.users.getOperator(supervisorId);
+    return {
+      data: result,
+    };
+  }
+
   @Get(':id')
   @Permission('manage:users')
   @ApiOperation({ summary: 'Get a user by ID' })
@@ -61,7 +85,7 @@ export class UsersController {
     return this.users.create(dto);
   }
 
-  @Put('id')
+  @Put(':id')
   @Permission('manage_users')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiResponse({ status: 200, description: 'OK' })
@@ -69,33 +93,11 @@ export class UsersController {
     return this.users.update(id, dto);
   }
 
-  @Delete('id')
+  @Delete(':id')
   @Permission('manage:users')
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 204, description: 'No Content' })
   remove(@Param('id') id: string) {
     return this.users.remove(id);
-  }
-
-  @Get('/get-supervisor')
-  @ApiOperation({ summary: 'Get supervisor of a staff via query' })
-  async getSupervisor(
-    @Query('staffId') staffId: GetSupervisorRequest,
-  ): Promise<WebResponse<GetSupervisorResponse>> {
-    const result = await this.users.getSupervisor(staffId);
-    return {
-      data: result,
-    };
-  }
-
-  @Get('/get-operators')
-  @ApiOperation({ summary: 'Get operator of a staff via query' })
-  async getOperators(
-    @Query('supervisorId') supervisorId: GetOperatorRequest,
-  ): Promise<WebResponse<GetOperatorResponse[]>> {
-    const result = await this.users.getOperator(supervisorId);
-    return {
-      data: result,
-    };
   }
 }
