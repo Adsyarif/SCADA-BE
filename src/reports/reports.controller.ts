@@ -31,6 +31,7 @@ export class ReportController {
   async create(
     @Body() request: CreateReportRequest,
   ): Promise<WebResponse<CreateReportResponse>> {
+    console.log(request)
     const result = await this.reportService.createReport(request);
     return {
       data: result,

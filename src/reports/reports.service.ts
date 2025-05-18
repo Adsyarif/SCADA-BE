@@ -24,14 +24,14 @@ export class ReportService {
     private prismaService: PrismaService,
   ) {}
 
-  async createReport(
-    request: CreateReportRequest,
-  ): Promise<CreateReportResponse> {
+ async createReport(
+  request: CreateReportRequest,
+): Promise<CreateReportResponse> {
+  try {
     this.logger.info(`Register new report: ${JSON.stringify(request)}`);
-
+    console.log(request)
     const createReportRequest: CreateReportRequest =
       this.validationService.validate(ReportValidation.CREATE, request);
-
     const createReport = await this.prismaService.report.create({
       data: {
         reportToId: createReportRequest.reportToId,
@@ -47,16 +47,19 @@ export class ReportService {
       },
     });
 
-    const response: CreateReportResponse = {
+    return {
       reportTo: createReport.reportTo.username,
       reportToId: createReport.reportToId,
       reportFrom: createReport.reportFrom.username,
       reportFromId: createReport.reportFromId,
-      createAt: createReport.created_at,
+      createdAt: createReport.created_at,
     };
-
-    return response;
+  } catch (error) {
+    this.logger.error('Error creating report', error);
+    throw new Error('Failed to create report');
   }
+}
+
 
   async getAllReportCategory(): Promise<GetReportCategoryResponse[]> {
     const response = await this.prismaService.reportCategory.findMany();

@@ -1,20 +1,40 @@
 import { ReportCategory, User } from '@prisma/client';
 
+import { IsString, IsOptional, Length } from 'class-validator';
+
 export class CreateReportRequest {
+  @IsString()
+  @Length(1, 100)
   reportToId: string;
+
+  @IsString()
+  @Length(1, 100)
   reportFromId: string;
+
+  @IsString()
+  @Length(1, 100)
   reportCategoryId: string;
+
+  @IsOptional()
+  @IsString()
   updatedBy?: string;
+
+  @IsOptional()
+  @IsString()
   reportImage?: string;
+
+  @IsString()
+  @Length(1, 2000)
   reportDescription: string;
 }
+
 
 export class CreateReportResponse {
   reportTo: string;
   reportToId: string;
   reportFrom: string;
   reportFromId: string;
-  createAt: Date;
+  createdAt: Date;
 }
 
 export class GetSentReportByIdRequest {
