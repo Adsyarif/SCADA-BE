@@ -94,6 +94,7 @@ model Report {
   report_image  String?
 }
 
+
 model ReportCategory {
   id String @id @default(uuid())
   category_name String @unique @db.VarChar(100)
