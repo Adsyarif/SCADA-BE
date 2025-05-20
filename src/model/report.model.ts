@@ -28,7 +28,6 @@ export class CreateReportRequest {
   reportDescription: string;
 }
 
-
 export class CreateReportResponse {
   reportTo: string;
   reportToId: string;
@@ -54,9 +53,12 @@ export class GetReportsByIdRequest {
 }
 
 export class GetReportsByIdResponse {
-  reportTo: User;
+  reportId: string;
+  reportToId: string;
+  reportTo: string;
   create_at: Date;
-  reportCategory: ReportCategory;
+  reportCategoryId: string;
+  reportCategory: string;
   reportDescription: string;
 }
 

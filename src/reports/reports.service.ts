@@ -24,42 +24,41 @@ export class ReportService {
     private prismaService: PrismaService,
   ) {}
 
- async createReport(
-  request: CreateReportRequest,
-): Promise<CreateReportResponse> {
-  try {
-    this.logger.info(`Register new report: ${JSON.stringify(request)}`);
-    console.log(request)
-    const createReportRequest: CreateReportRequest =
-      this.validationService.validate(ReportValidation.CREATE, request);
-    const createReport = await this.prismaService.report.create({
-      data: {
-        reportToId: createReportRequest.reportToId,
-        reportFromId: createReportRequest.reportFromId,
-        reportCategoryId: createReportRequest.reportCategoryId,
-        report_description: createReportRequest.reportDescription,
-        updated_by: createReportRequest.updatedBy,
-        report_image: createReportRequest.reportImage,
-      },
-      include: {
-        reportTo: true,
-        reportFrom: true,
-      },
-    });
+  async createReport(
+    request: CreateReportRequest,
+  ): Promise<CreateReportResponse> {
+    try {
+      this.logger.info(`Register new report: ${JSON.stringify(request)}`);
+      console.log(request);
+      const createReportRequest: CreateReportRequest =
+        this.validationService.validate(ReportValidation.CREATE, request);
+      const createReport = await this.prismaService.report.create({
+        data: {
+          reportToId: createReportRequest.reportToId,
+          reportFromId: createReportRequest.reportFromId,
+          reportCategoryId: createReportRequest.reportCategoryId,
+          report_description: createReportRequest.reportDescription,
+          updated_by: createReportRequest.updatedBy,
+          report_image: createReportRequest.reportImage,
+        },
+        include: {
+          reportTo: true,
+          reportFrom: true,
+        },
+      });
 
-    return {
-      reportTo: createReport.reportTo.username,
-      reportToId: createReport.reportToId,
-      reportFrom: createReport.reportFrom.username,
-      reportFromId: createReport.reportFromId,
-      createdAt: createReport.created_at,
-    };
-  } catch (error) {
-    this.logger.error('Error creating report', error);
-    throw new Error('Failed to create report');
+      return {
+        reportTo: createReport.reportTo.username,
+        reportToId: createReport.reportToId,
+        reportFrom: createReport.reportFrom.username,
+        reportFromId: createReport.reportFromId,
+        createdAt: createReport.created_at,
+      };
+    } catch (error) {
+      this.logger.error('Error creating report', error);
+      throw new Error('Failed to create report');
+    }
   }
-}
-
 
   async getAllReportCategory(): Promise<GetReportCategoryResponse[]> {
     const response = await this.prismaService.reportCategory.findMany();
@@ -138,9 +137,12 @@ export class ReportService {
     }
 
     return reports.map((report) => ({
-      reportTo: report.reportTo,
+      reportId: report.id,
+      reportToId: report.reportToId,
+      reportTo: report.reportTo.username,
       create_at: report.created_at,
-      reportCategory: report.reportCategory,
+      reportCategoryId: report.reportCategory.id,
+      reportCategory: report.reportCategory.category_name,
       reportDescription: report.report_description,
     }));
   }
