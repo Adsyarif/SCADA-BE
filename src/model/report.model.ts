@@ -75,3 +75,16 @@ export class GetReportsByFilterResponse {
   reportCategory: ReportCategory;
   reportDescription: string;
 }
+
+export class GetReportByReportIdRequest {
+  reportId: string;
+}
+
+export class GetReportByReportIdResponse {
+  reportToId: string;
+  reportToName: string;
+  create_at: Date;
+  reportCategoryId: string;
+  reportCategoryName: string;
+  reportDescription: string;
+}
