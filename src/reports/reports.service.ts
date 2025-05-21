@@ -29,7 +29,6 @@ export class ReportService {
   ): Promise<CreateReportResponse> {
     try {
       this.logger.info(`Register new report: ${JSON.stringify(request)}`);
-      console.log(request);
       const createReportRequest: CreateReportRequest =
         this.validationService.validate(ReportValidation.CREATE, request);
       const createReport = await this.prismaService.report.create({
