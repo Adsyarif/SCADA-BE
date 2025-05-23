@@ -135,6 +135,14 @@ async function main() {
     },
   });
 
+  const reportCategory1 = await prisma.reportCategory.upsert({
+    where: { category_name: 'Technical Issue' },
+    update: {},
+    create: {
+      category_name: 'Technical Issue',
+    },
+  });
+
   await prisma.report.create({
     data: {
       reportToId: reportedUser.id,
@@ -143,6 +151,41 @@ async function main() {
       report_description:
         'User melakukan pelanggaran etika saat meeting online.',
       report_image: 'https://example.com/report-image.jpg',
+    },
+  });
+
+  const report = await prisma.report.create({
+    data: {
+      reportToId: reportedUser.id,
+      reportFromId: reporterUser.id,
+      reportCategoryId: reportCategory1.id,
+      report_description: 'Sensor tidak bekerja dengan baik di RTU-1.',
+    },
+  });
+
+  const reply1 = await prisma.reportReply.create({
+    data: {
+      reportId: report.id,
+      userId: reportedUser.id,
+      message: 'Terima kasih atas laporannya, kami akan cek secepatnya.',
+    },
+  });
+
+  const reply2 = await prisma.reportReply.create({
+    data: {
+      reportId: report.id,
+      userId: reporterUser.id,
+      parentReplyId: reply1.id,
+      message: 'Baik, kami tunggu kabar selanjutnya.',
+    },
+  });
+
+  await prisma.reportReply.create({
+    data: {
+      reportId: report.id,
+      userId: reportedUser.id,
+      parentReplyId: reply2.id,
+      message: 'Sudah dicek, ternyata ada kabel yang longgar.',
     },
   });
 
@@ -184,6 +227,34 @@ async function main() {
     update: {},
     create: {
       staffId: staffUser.id,
+      supervisorId: supervisorUser.id,
+    },
+  });
+
+  await prisma.userSupervisor.upsert({
+    where: {
+      supervisor_staff_unique: {
+        staffId: reportedUser.id,
+        supervisorId: supervisorUser.id,
+      },
+    },
+    update: {},
+    create: {
+      staffId: reportedUser.id,
+      supervisorId: supervisorUser.id,
+    },
+  });
+
+  await prisma.userSupervisor.upsert({
+    where: {
+      supervisor_staff_unique: {
+        staffId: reporterUser.id,
+        supervisorId: supervisorUser.id,
+      },
+    },
+    update: {},
+    create: {
+      staffId: reporterUser.id,
       supervisorId: supervisorUser.id,
     },
   });

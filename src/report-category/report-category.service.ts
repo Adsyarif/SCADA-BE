@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { PrismaService } from 'prisma/prisma.service';
+
 import { Logger } from 'winston';
 import { ValidationService } from 'src/common/validation.service';
 import * as request from 'supertest';
@@ -9,6 +9,7 @@ import {
   CreateReportCategoryResponse,
 } from 'src/model/reportCategory.model';
 import { CategoryReportValidation } from './report-category.validation';
+import { PrismaService } from 'src/common/prisma.service';
 
 @Injectable()
 export class ReportCategoryService {

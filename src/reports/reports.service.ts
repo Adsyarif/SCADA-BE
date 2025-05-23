@@ -3,6 +3,8 @@ import { ValidationService } from '../common/validation.service';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetReportByReportIdRequest,
+  GetReportByReportIdResponse,
   GetReportsByFilterRequest,
   GetReportsByFilterResponse,
   GetReportsByIdRequest,
@@ -15,6 +17,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ReportValidation } from './reports.validation';
 import { PrismaService } from 'src/common/prisma.service';
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
+import * as request from 'supertest';
 
 @Injectable()
 export class ReportService {
@@ -197,5 +200,45 @@ export class ReportService {
       reportCategory: report.reportCategory,
       reportDescription: report.report_description,
     }));
+  }
+
+  async getReportByReportId(
+    request: GetReportByReportIdRequest,
+  ): Promise<GetReportByReportIdResponse> {
+    try {
+      const getReportByReportIdRequest: GetReportByReportIdRequest =
+        this.validationService.validate(
+          ReportValidation.GET_REPORT_BY_REPORT_ID,
+          request,
+        );
+      const report = await this.prismaService.report.findUnique({
+        where: {
+          id: getReportByReportIdRequest.reportId,
+        },
+        include: {
+          reportCategory: true,
+          reportFrom: true,
+          reportTo: true,
+        },
+      });
+
+      if (!report) {
+        throw new HttpException('Report not found', 404);
+      }
+
+      return {
+        reportId: report.id,
+        reportToId: report.reportTo.username,
+        reportToName: report.reportTo.username,
+        create_at: report.created_at,
+        reportCategoryId: report.reportCategoryId,
+        reportCategoryName: report.reportCategory.category_name,
+        reportDescription: report.report_description,
+        reportImage: report.report_image,
+      };
+    } catch (error) {
+      this.logger.error('Error creating report', error);
+      throw new HttpException('Report not found', 404);
+    }
   }
 }

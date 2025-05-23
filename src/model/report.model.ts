@@ -82,10 +82,12 @@ export class GetReportByReportIdRequest {
 }
 
 export class GetReportByReportIdResponse {
+  reportId: string;
   reportToId: string;
   reportToName: string;
   create_at: Date;
   reportCategoryId: string;
   reportCategoryName: string;
   reportDescription: string;
+  reportImage?: string | undefined | null;
 }
