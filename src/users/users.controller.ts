@@ -60,9 +60,12 @@ export class UsersController {
   @Get('/get-operators')
   @ApiOperation({ summary: 'Get operator of a staff via query' })
   async getOperators(
-    @Query('supervisorId') supervisorId: GetOperatorRequest,
+    @Query('supervisorId') supervisorId: string,
   ): Promise<WebResponse<GetOperatorResponse[]>> {
-    const result = await this.users.getOperator(supervisorId);
+    const supervisorIdRequest: GetOperatorRequest = {
+      supervisorId: supervisorId,
+    };
+    const result = await this.users.getOperator(supervisorIdRequest);
     return {
       data: result,
     };

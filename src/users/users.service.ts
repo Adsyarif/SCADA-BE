@@ -181,6 +181,7 @@ export class UsersService {
     const getOperatorRequest: GetOperatorRequest =
       this.validationService.validate(UserValidation.GET_OPERATOR, request);
 
+    console.log(getOperatorRequest);
     const operators = await this.prisma.userSupervisor.findMany({
       where: {
         supervisorId: getOperatorRequest.supervisorId,
@@ -195,7 +196,7 @@ export class UsersService {
     }
 
     return operators.map((operator) => ({
-      operatorId: operator.id,
+      operatorId: operator.staff.id,
       operatorName: operator.staff.username,
     }));
   }
