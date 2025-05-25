@@ -146,6 +146,7 @@ export class ReportService {
       reportCategoryId: report.reportCategory.id,
       reportCategory: report.reportCategory.category_name,
       reportDescription: report.report_description,
+      status: report.status,
     }));
   }
 

@@ -61,6 +61,7 @@ export class GetReportsByIdResponse {
   reportCategoryId: string;
   reportCategory: string;
   reportDescription: string;
+  status: string;
 }
 
 export class GetReportsByFilterRequest {
