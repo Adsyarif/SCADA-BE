@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
@@ -57,24 +58,27 @@ export class UsersController {
   @Permission('manage:users')
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'Created' })
-  create(@Body() dto: CreateUserDto) {
-    return this.users.create(dto);
+  create(@Body() dto: CreateUserDto, @Req() req) {
+    const currentUserId = (req.user as any).id;
+    return this.users.create(dto, currentUserId)
   }
 
   @Put('id')
   @Permission('manage_users')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiResponse({ status: 200, description: 'OK' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.users.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto, @Req() req) {
+    const currentUserId = (req.user as any).id
+    return this.users.update(id, dto, currentUserId);
   }
 
   @Delete('id')
   @Permission('manage:users')
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 204, description: 'No Content' })
-  remove(@Param('id') id: string) {
-    return this.users.remove(id);
+  remove(@Param('id') id: string, @Req() req) {
+    const currentUserId = (req.user as any).id;
+    return this.users.remove(id, currentUserId);
   }
 
   @Get('/get-supervisor')

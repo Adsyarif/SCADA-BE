@@ -2,6 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNumber } from 'class-validator';
 
 export class CreateRtuConfigurationDto {
+
+  @ApiProperty({ example: 'RTU-001', description: 'Unique RTU engine ID' })
+  @IsString()
+  rtuEngineId: string;
+  
   @ApiProperty({ example: 'RTU-001', description: 'Unique RTU name' })
   @IsString()
   rtuName: string;
