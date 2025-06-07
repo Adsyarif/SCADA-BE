@@ -28,6 +28,7 @@ export class CreateReportRequest {
   reportDescription: string;
 }
 
+
 export class CreateReportResponse {
   reportTo: string;
   reportToId: string;
