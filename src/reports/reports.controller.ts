@@ -83,7 +83,7 @@ export class ReportController {
   @HttpCode(200)
   async getReportByReportId(
     @Param('id') id: string,
-  ): Promise<WebResponse<GetReportByReportIdResponse>> {
+  ): Promise<WebResponse<GetReportByReportIdResponse | null>> {
     const reportId: GetReportByReportIdRequest = {
       reportId: id,
     };

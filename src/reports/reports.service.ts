@@ -135,7 +135,7 @@ export class ReportService {
     });
 
     if (!reports || reports.length === 0) {
-      throw new HttpException('Report are not found', 400);
+      return [];
     }
 
     return reports.map((report) => ({
@@ -205,7 +205,7 @@ export class ReportService {
 
   async getReportByReportId(
     request: GetReportByReportIdRequest,
-  ): Promise<GetReportByReportIdResponse> {
+  ): Promise<GetReportByReportIdResponse | null> {
     try {
       const getReportByReportIdRequest: GetReportByReportIdRequest =
         this.validationService.validate(
@@ -224,7 +224,7 @@ export class ReportService {
       });
 
       if (!report) {
-        throw new HttpException('Report not found', 404);
+        return null;
       }
 
       return {
