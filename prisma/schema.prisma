@@ -198,6 +198,8 @@ model Schedule {
   shift       Shift    @relation(fields: [shiftId], references: [id])
   shiftId     String
 
+  date        DateTime  @default(now())
+
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
   deleted_at  DateTime?
