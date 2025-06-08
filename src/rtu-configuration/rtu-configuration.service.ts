@@ -13,6 +13,7 @@ export class RtuConfigurationService {
         try {
             return await this.prisma.rtuConfiguration.create({
                 data: {
+                    rtuEngineId: dto.rtuEngineId,
                     rtuName: dto.rtuName,
                     latitude: dto.latitude,
                     longitude: dto.longitude,

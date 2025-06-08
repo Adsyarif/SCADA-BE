@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
@@ -28,6 +29,7 @@ import {
   GetSupervisorResponse,
 } from 'src/model/user.model';
 import { WebResponse } from 'src/model/web.model';
+import { PageOptionsDto } from './dto/page-options.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth('access_token')
@@ -40,8 +42,8 @@ export class UsersController {
   @Permission('manage:users')
   @ApiOperation({ summary: 'List all users' })
   @ApiResponse({ status: 200, description: 'OK' })
-  findAll() {
-    return this.users.findAll();
+    async findAll(@Query() opts: PageOptionsDto) {
+    return this.users.findAll(opts);
   }
 
   @Get('/get-supervisor')
@@ -84,23 +86,26 @@ export class UsersController {
   @Permission('manage:users')
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'Created' })
-  create(@Body() dto: CreateUserDto) {
-    return this.users.create(dto);
+  create(@Body() dto: CreateUserDto, @Req() req) {
+    const currentUserId = (req.user as any).id;
+    return this.users.create(dto, currentUserId)
   }
 
   @Put(':id')
-  @Permission('manage_users')
+  @Permission('manage:users')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiResponse({ status: 200, description: 'OK' })
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.users.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto, @Req() req) {
+    const currentUserId = (req.user as any).id
+    return this.users.update(id, dto, currentUserId);
   }
 
   @Delete(':id')
   @Permission('manage:users')
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 204, description: 'No Content' })
-  remove(@Param('id') id: string) {
-    return this.users.remove(id);
+  remove(@Param('id') id: string, @Req() req) {
+    const currentUserId = (req.user as any).id;
+    return this.users.remove(id, currentUserId);
   }
 }

@@ -1,7 +1,7 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, RtuAssignmentDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
@@ -13,6 +13,9 @@ import { ValidationService } from 'src/common/validation.service';
 import { UserValidation } from './user.validation';
 import { GetOperatorRequest } from '../model/user.model';
 import { RoleWithPermissions, UserWithRolePermissions } from './type';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PageOptionsDto } from './dto/page-options.dto';
+import { PaginatedUsers } from './types/users-types';
 
 @Injectable()
 export class UsersService {
@@ -99,53 +102,194 @@ export class UsersService {
     };
   }
 
-  async findAll() {
-    return this.prisma.user.findMany({
-      include: { role: { select: { id: true, roleName: true } } },
+  async findAll(opts:PageOptionsDto): Promise<PaginatedUsers> {
+
+    const page = opts.page ?? 1;
+    const limit = opts.limit ?? 25;
+    const skip = (page - 1) * limit;  
+
+    const [rawData, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where: { deleted_at: null },
+        include: {
+          role: {
+            include: {
+              userRolePermissions: {
+                include: {
+                  permission: {
+                    select: {
+                      permissionName: true,
+                      permissionCode: true,
+                    }
+                  }
+                }
+              }
+            }
+          },
+          userSites: {
+            include: { rtuConfiguration: true }
+          }
+        },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.user.count({ where: { deleted_at: null } }),
+    ]);
+
+    const data = rawData.map((user) => {
+      const { role: rawRole, userRoleId, ...rest } = user;
+      const role: RoleWithPermissions = {
+        id: rawRole.id,
+        roleName: rawRole.roleName,
+        permissions: rawRole.userRolePermissions
+          ? rawRole.userRolePermissions.map((urp) => urp.permission)
+          : [],
+      };
+      return {
+        ...rest,
+        role,
+      };
     });
+
+    return { data, total, page, limit }
   }
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { role: { select: { id: true, roleName: true } } },
+      include: {
+        role: true,
+        userSites: {
+          include: { rtuConfiguration: true }
+        }
+      }
     });
     if (!user) throw new NotFoundException(`User ${id} not found`);
     return user;
   }
 
-  async create(dto: CreateUserDto) {
-    const hashed = await bcrypt.hash(dto.password, 12);
-    return this.prisma.user.create({
-      data: {
-        username: dto.username,
-        email: dto.email,
-        password: hashed,
-        phone_number: dto.phone_number,
-        employee_number: dto.employee_number,
-        role: { connect: { id: dto.userRoleId } },
-      },
-      include: { role: { select: { id: true, roleName: true } } },
-    });
+  async create(dto: CreateUserDto, currentUserId: string) {
+    const {
+      username,
+      email,
+      password,
+      phone_number,
+      employee_number,
+      nik,
+      office_phone_number,
+      userRoleId,
+      address,
+      rtuAssignments,
+    } = dto
+
+    const hashed = await bcrypt.hash(password, 12);
+
+    try {
+      const newUser = await this.prisma.user.create({
+        data: {
+          username,
+          email,
+          password: hashed,
+          phone_number,
+          office_phone_number,
+          employee_number,
+          nik,
+          userRoleId,
+          address,
+          updated_by: currentUserId
+
+        }
+      })
+
+      const userSiteData = rtuAssignments?.map((assign: RtuAssignmentDto) => ({
+        userId: newUser.id,
+        rtuId: assign. rtuId,
+        checkInStatus: assign.checkInStatus,
+        updated_by: currentUserId
+      }))
+
+      await this.prisma.userSite.createMany({
+        data: userSiteData,
+        skipDuplicates: true,
+      })
+
+      return newUser;
+
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+        const target = (error.meta as any).target.join(', ')
+        throw new HttpException(`Unique constraint failed: (${target})`, HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException('Failed to create user', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  async update(id: string, dto: UpdateUserDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UpdateUserDto, currentUserId: string) {
+    await this.prisma.user.findUnique({
+      where: { id }
+    }).then((user) => {
+      if (!user) throw new NotFoundException(`User with id ${id} not found`);
+    })
 
-    const data: any = { ...dto };
-    if (dto.password) {
-      data.password = await bcrypt.hash(dto.password, 12);
+    const dataToUpdate: any = { updated_by: currentUserId }
+    if (dto.username != undefined) dataToUpdate.username = dto.username;
+    if (dto.email != undefined) dataToUpdate.email = dto.email;
+    if (dto.phone_number != undefined) dataToUpdate.phone_number = dto.phone_number;
+    if (dto.office_phone_number != undefined) dataToUpdate.office_phone_number = dto.office_phone_number;
+    if (dto.employee_number != undefined) dataToUpdate.employee_number = dto.employee_number;
+    if (dto.nik != undefined) dataToUpdate.nik = dto.nik;
+    if (dto.address != undefined) dataToUpdate.address = dto.address;
+    if (dto.userRoleId != undefined) dataToUpdate.userRoleId = dto.userRoleId;
+    if (dto.password != undefined) {
+      dataToUpdate.password = await bcrypt.hash(dto.password, 12);
     }
+
+    try {
+       const updatedUser = await this.prisma.user.update({
+        where: { id },
+        data: dataToUpdate
+       })
+      
+       if (Array.isArray(dto.rtuAssignments)) {
+        await this.prisma.userSite.deleteMany({ where: { userId: id } });
+
+        const userSiteData = dto.rtuAssignments.map((assign: RtuAssignmentDto) => ({
+          userId: id,
+          rtuId: assign.rtuId,
+          checkInStatus: assign.checkInStatus,
+          updated_by: currentUserId
+        }))
+        await this.prisma.userSite.createMany({
+          data: userSiteData,
+          skipDuplicates: true,
+        })
+       }
+
+       return updatedUser
+
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+        const target = (error.meta as any).target.join(', ')
+        throw new HttpException(`Unique constraint failed: (${target})`, HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException('Failed to update user', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+  }
+
+  async remove(id: string, currentUserId: string) {
+    const existing = await this.prisma.user.findUnique({ where : { id } });
+    if (!existing) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    await this.prisma.userSite.deleteMany({ where: { userId: id } });
     return this.prisma.user.update({
       where: { id },
-      data,
-      include: { role: { select: { id: true, roleName: true } } },
-    });
-  }
-
-  async remove(id: string) {
-    await this.findOne(id);
-    return this.prisma.user.delete({ where: { id } });
+      data: {
+        deleted_at: new Date(),
+        updated_by: currentUserId,
+      }
+    })
   }
 
   async getSupervisor(

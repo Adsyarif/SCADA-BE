@@ -54,8 +54,8 @@ export class AuthController {
       },
     },
   })
+  
   getProfile(@Request() req) {
     return this.authService.me(req.user.userId);
   }
-
 }
