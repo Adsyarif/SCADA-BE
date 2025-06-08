@@ -64,6 +64,8 @@ model User {
   role            UserRole  @relation(fields: [userRoleId], references: [id])
   userSites       UserSite[]
   reportReplies   ReportReply[] @relation("UserReportReplies")
+  schedules    Schedule[]
+
 }
 
 model UserSupervisor {
@@ -175,3 +177,31 @@ model UserSite {
   @@unique([userId, rtuId], name: "user_site_unique")
 }
 
+model Shift {
+  id          String      @id @default(uuid())
+  shiftName   String      @unique
+  startTime   DateTime
+  endTime     DateTime
+  isActive    Boolean     @default(true)
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt @default(now())
+  deleted_at  DateTime?
+  updated_by  String?
+
+  schedules    Schedule[]
+}
+
+model Schedule {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  shift       Shift    @relation(fields: [shiftId], references: [id])
+  shiftId     String
+
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  deleted_at  DateTime?
+  updated_by  String?
+
+  @@unique([userId, shiftId])
+}
