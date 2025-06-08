@@ -14,6 +14,8 @@ import { UserValidation } from './user.validation';
 import { GetOperatorRequest } from '../model/user.model';
 import { RoleWithPermissions, UserWithRolePermissions } from './type';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PageOptionsDto } from './dto/page-options.dto';
+import { PaginatedUsers } from './types/users-types';
 
 @Injectable()
 export class UsersService {
@@ -102,17 +104,57 @@ export class UsersService {
     };
   }
 
-  async findAll() {
-    return this.prisma.user.findMany({
-      where: { deleted_at: null },
-      include: {
-        role: true,
-        userSites: {
-          include: { rtuConfiguration: true}
-        }
-      },
-      orderBy: { created_at: 'desc' },
+  async findAll(opts:PageOptionsDto): Promise<PaginatedUsers> {
+
+    const page = opts.page ?? 1;
+    const limit = opts.limit ?? 25;
+    const skip = (page - 1) * limit;  
+
+    const [rawData, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where: { deleted_at: null },
+        include: {
+          role: {
+            include: {
+              userRolePermissions: {
+                include: {
+                  permission: {
+                    select: {
+                      permissionName: true,
+                      permissionCode: true,
+                    }
+                  }
+                }
+              }
+            }
+          },
+          userSites: {
+            include: { rtuConfiguration: true }
+          }
+        },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.user.count({ where: { deleted_at: null } }),
+    ]);
+
+    const data = rawData.map((user) => {
+      const { role: rawRole, userRoleId, ...rest } = user;
+      const role: RoleWithPermissions = {
+        id: rawRole.id,
+        roleName: rawRole.roleName,
+        permissions: rawRole.userRolePermissions
+          ? rawRole.userRolePermissions.map((urp) => urp.permission)
+          : [],
+      };
+      return {
+        ...rest,
+        role,
+      };
     });
+
+    return { data, total, page, limit }
   }
 
   async findOne(id: string) {
