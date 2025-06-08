@@ -12,6 +12,8 @@ import { WebResponse } from 'src/model/web.model';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetReportByReportIdRequest,
+  GetReportByReportIdResponse,
   GetReportsByFilterRequest,
   GetReportsByFilterResponse,
   GetReportsByIdRequest,
@@ -31,6 +33,7 @@ export class ReportController {
   async create(
     @Body() request: CreateReportRequest,
   ): Promise<WebResponse<CreateReportResponse>> {
+    console.log(request);
     const result = await this.reportService.createReport(request);
     return {
       data: result,
@@ -70,6 +73,21 @@ export class ReportController {
       reportFromId: id,
     };
     const result = await this.reportService.getReportById(userId);
+
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/get-report-by-id/:id')
+  @HttpCode(200)
+  async getReportByReportId(
+    @Param('id') id: string,
+  ): Promise<WebResponse<GetReportByReportIdResponse | null>> {
+    const reportId: GetReportByReportIdRequest = {
+      reportId: id,
+    };
+    const result = await this.reportService.getReportByReportId(reportId);
 
     return {
       data: result,

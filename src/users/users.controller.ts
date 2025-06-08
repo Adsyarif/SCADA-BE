@@ -45,6 +45,34 @@ export class UsersController {
     async findAll(@Query() opts: PageOptionsDto) {
     return this.users.findAll(opts);
   }
+
+  @Get('/get-supervisor')
+  async getSupervisor(
+    @Query('staffId') staffId: string,
+  ): Promise<WebResponse<GetSupervisorResponse>> {
+    const staffIdRequest: GetSupervisorRequest = {
+      staffId: staffId,
+    };
+    const result = await this.users.getSupervisor(staffIdRequest);
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/get-operators')
+  @ApiOperation({ summary: 'Get operator of a staff via query' })
+  async getOperators(
+    @Query('supervisorId') supervisorId: string,
+  ): Promise<WebResponse<GetOperatorResponse[]>> {
+    const supervisorIdRequest: GetOperatorRequest = {
+      supervisorId: supervisorId,
+    };
+    const result = await this.users.getOperator(supervisorIdRequest);
+    return {
+      data: result,
+    };
+  }
+
   @Get(':id')
   @Permission('manage:users')
   @ApiOperation({ summary: 'Get a user by ID' })
@@ -79,27 +107,5 @@ export class UsersController {
   remove(@Param('id') id: string, @Req() req) {
     const currentUserId = (req.user as any).id;
     return this.users.remove(id, currentUserId);
-  }
-
-  @Get('/get-supervisor')
-  @ApiOperation({ summary: 'Get supervisor of a staff via query' })
-  async getSupervisor(
-    @Query('staffId') staffId: GetSupervisorRequest,
-  ): Promise<WebResponse<GetSupervisorResponse>> {
-    const result = await this.users.getSupervisor(staffId);
-    return {
-      data: result,
-    };
-  }
-
-  @Get('/get-operators')
-  @ApiOperation({ summary: 'Get operator of a staff via query' })
-  async getOperators(
-    @Query('supervisorId') supervisorId: GetOperatorRequest,
-  ): Promise<WebResponse<GetOperatorResponse[]>> {
-    const result = await this.users.getOperator(supervisorId);
-    return {
-      data: result,
-    };
   }
 }

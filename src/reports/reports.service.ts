@@ -3,6 +3,8 @@ import { ValidationService } from '../common/validation.service';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetReportByReportIdRequest,
+  GetReportByReportIdResponse,
   GetReportsByFilterRequest,
   GetReportsByFilterResponse,
   GetReportsByIdRequest,
@@ -15,6 +17,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ReportValidation } from './reports.validation';
 import { PrismaService } from 'src/common/prisma.service';
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
+import * as request from 'supertest';
 
 @Injectable()
 export class ReportService {
@@ -27,32 +30,36 @@ export class ReportService {
   async createReport(
     request: CreateReportRequest,
   ): Promise<CreateReportResponse> {
-    this.logger.info(`Register new report: ${JSON.stringify(request)}`);
+    try {
+      this.logger.info(`Register new report: ${JSON.stringify(request)}`);
+      const createReportRequest: CreateReportRequest =
+        this.validationService.validate(ReportValidation.CREATE, request);
+      const createReport = await this.prismaService.report.create({
+        data: {
+          reportToId: createReportRequest.reportToId,
+          reportFromId: createReportRequest.reportFromId,
+          reportCategoryId: createReportRequest.reportCategoryId,
+          report_description: createReportRequest.reportDescription,
+          updated_by: createReportRequest.updatedBy,
+          report_image: createReportRequest.reportImage,
+        },
+        include: {
+          reportTo: true,
+          reportFrom: true,
+        },
+      });
 
-    const createReportRequest: CreateReportRequest =
-      this.validationService.validate(ReportValidation.CREATE, request);
-
-    const createReport = await this.prismaService.report.create({
-      data: {
-        reportToId: createReportRequest.reportToId,
-        reportFromId: createReportRequest.reportFromId,
-        reportCategoryId: createReportRequest.reportCategoryId,
-        report_description: createReportRequest.report_description,
-        updated_by: createReportRequest.updatedBy,
-        report_image: createReportRequest.report_image,
-      },
-      include: {
-        reportTo: true,
-        reportFrom: true,
-      },
-    });
-
-    const response: CreateReportResponse = {
-      reportTo: createReport.reportTo,
-      reportFrom: createReport.reportFrom,
-    };
-
-    return response;
+      return {
+        reportTo: createReport.reportTo.username,
+        reportToId: createReport.reportToId,
+        reportFrom: createReport.reportFrom.username,
+        reportFromId: createReport.reportFromId,
+        createdAt: createReport.created_at,
+      };
+    } catch (error) {
+      this.logger.error('Error creating report', error);
+      throw new Error('Failed to create report');
+    }
   }
 
   async getAllReportCategory(): Promise<GetReportCategoryResponse[]> {
@@ -128,14 +135,18 @@ export class ReportService {
     });
 
     if (!reports || reports.length === 0) {
-      throw new HttpException('Report are not found', 400);
+      return [];
     }
 
     return reports.map((report) => ({
-      reportTo: report.reportTo,
+      reportId: report.id,
+      reportToId: report.reportToId,
+      reportTo: report.reportTo.username,
       create_at: report.created_at,
-      reportCategory: report.reportCategory,
+      reportCategoryId: report.reportCategory.id,
+      reportCategory: report.reportCategory.category_name,
       reportDescription: report.report_description,
+      status: report.status,
     }));
   }
 
@@ -146,16 +157,34 @@ export class ReportService {
       `ReportService.getReportsByFilter (${JSON.stringify(request)})`,
     );
 
-    const getReportsByFilterRequest: GetReportsByFilterRequest =
-      this.validationService.validate(
-        ReportValidation.GET_REPORT_BY_FILTER,
-        request,
-      );
+    const getReportsByFilterRequest = this.validationService.validate(
+      ReportValidation.GET_REPORT_BY_FILTER,
+      request,
+    );
+
+    const filters: any = {
+      reportFromId: getReportsByFilterRequest.reportFromId,
+    };
+
+    if (getReportsByFilterRequest.reportCategory) {
+      filters.reportCategory = getReportsByFilterRequest.reportCategory;
+    }
+
+    if (getReportsByFilterRequest.create_at) {
+      filters.created_at = new Date(getReportsByFilterRequest.create_at);
+    }
+
+    if (getReportsByFilterRequest.reportToName) {
+      filters.reportTo = {
+        name: {
+          contains: getReportsByFilterRequest.reportToName,
+          mode: 'insensitive',
+        },
+      };
+    }
 
     const reports = await this.prismaService.report.findMany({
-      where: {
-        reportFromId: getReportsByFilterRequest.reportFromId,
-      },
+      where: filters,
       include: {
         reportCategory: true,
         reportTo: true,
@@ -163,7 +192,7 @@ export class ReportService {
     });
 
     if (!reports || reports.length === 0) {
-      throw new HttpException('Reports are not found', 400);
+      throw new HttpException('Reports not found', 404);
     }
 
     return reports.map((report) => ({
@@ -172,5 +201,45 @@ export class ReportService {
       reportCategory: report.reportCategory,
       reportDescription: report.report_description,
     }));
+  }
+
+  async getReportByReportId(
+    request: GetReportByReportIdRequest,
+  ): Promise<GetReportByReportIdResponse | null> {
+    try {
+      const getReportByReportIdRequest: GetReportByReportIdRequest =
+        this.validationService.validate(
+          ReportValidation.GET_REPORT_BY_REPORT_ID,
+          request,
+        );
+      const report = await this.prismaService.report.findUnique({
+        where: {
+          id: getReportByReportIdRequest.reportId,
+        },
+        include: {
+          reportCategory: true,
+          reportFrom: true,
+          reportTo: true,
+        },
+      });
+
+      if (!report) {
+        return null;
+      }
+
+      return {
+        reportId: report.id,
+        reportToId: report.reportTo.username,
+        reportToName: report.reportTo.username,
+        create_at: report.created_at,
+        reportCategoryId: report.reportCategoryId,
+        reportCategoryName: report.reportCategory.category_name,
+        reportDescription: report.report_description,
+        reportImage: report.report_image,
+      };
+    } catch (error) {
+      this.logger.error('Error creating report', error);
+      throw new HttpException('Report not found', 404);
+    }
   }
 }

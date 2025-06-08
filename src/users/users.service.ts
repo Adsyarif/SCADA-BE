@@ -36,39 +36,37 @@ export class UsersService {
                   select: {
                     permissionName: true,
                     permissionCode: true,
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
     if (!user) {
-      return null
+      return null;
     }
 
-    const { role: rawRole, userRoleId, ...rest } = user
+    const { role: rawRole, userRoleId, ...rest } = user;
 
-    const role: RoleWithPermissions= {
+    const role: RoleWithPermissions = {
       id: rawRole.id,
       roleName: rawRole.roleName,
-      permissions: rawRole.userRolePermissions.map((urp) => urp.permission)
-    }
+      permissions: rawRole.userRolePermissions.map((urp) => urp.permission),
+    };
 
     return {
       ...rest,
       role,
-    }
+    };
   }
 
   async findById(id: string): Promise<UserWithRolePermissions | null> {
-
     if (!id) {
       throw new Error('User ID is required');
     }
-    
-   
+
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
@@ -300,6 +298,7 @@ export class UsersService {
     const getSupervisorRequest: GetSupervisorRequest =
       this.validationService.validate(UserValidation.GET_SUPERVISOR, request);
 
+    console.log(request, getSupervisorRequest.staffId);
     const supervisor = await this.prisma.userSupervisor.findFirst({
       where: { staffId: getSupervisorRequest.staffId, deleted_at: null },
       include: {
@@ -307,6 +306,8 @@ export class UsersService {
         supervisor: true,
       },
     });
+
+    console.log(supervisor);
 
     if (!supervisor) {
       throw new HttpException('User have no supervisor yet', 404);
@@ -324,6 +325,7 @@ export class UsersService {
     const getOperatorRequest: GetOperatorRequest =
       this.validationService.validate(UserValidation.GET_OPERATOR, request);
 
+    console.log(getOperatorRequest);
     const operators = await this.prisma.userSupervisor.findMany({
       where: {
         supervisorId: getOperatorRequest.supervisorId,
@@ -338,7 +340,7 @@ export class UsersService {
     }
 
     return operators.map((operator) => ({
-      operatorId: operator.id,
+      operatorId: operator.staff.id,
       operatorName: operator.staff.username,
     }));
   }

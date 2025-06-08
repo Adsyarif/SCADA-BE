@@ -1,17 +1,40 @@
 import { ReportCategory, User } from '@prisma/client';
 
+import { IsString, IsOptional, Length } from 'class-validator';
+
 export class CreateReportRequest {
+  @IsString()
+  @Length(1, 100)
   reportToId: string;
+
+  @IsString()
+  @Length(1, 100)
   reportFromId: string;
+
+  @IsString()
+  @Length(1, 100)
   reportCategoryId: string;
+
+  @IsOptional()
+  @IsString()
   updatedBy?: string;
-  report_image?: string;
-  report_description: string;
+
+  @IsOptional()
+  @IsString()
+  reportImage?: string;
+
+  @IsString()
+  @Length(1, 2000)
+  reportDescription: string;
 }
 
+
 export class CreateReportResponse {
-  reportTo: User;
-  reportFrom: User;
+  reportTo: string;
+  reportToId: string;
+  reportFrom: string;
+  reportFromId: string;
+  createdAt: Date;
 }
 
 export class GetSentReportByIdRequest {
@@ -31,10 +54,14 @@ export class GetReportsByIdRequest {
 }
 
 export class GetReportsByIdResponse {
-  reportTo: User;
+  reportId: string;
+  reportToId: string;
+  reportTo: string;
   create_at: Date;
-  reportCategory: ReportCategory;
+  reportCategoryId: string;
+  reportCategory: string;
   reportDescription: string;
+  status: string;
 }
 
 export class GetReportsByFilterRequest {
@@ -51,3 +78,17 @@ export class GetReportsByFilterResponse {
   reportDescription: string;
 }
 
+export class GetReportByReportIdRequest {
+  reportId: string;
+}
+
+export class GetReportByReportIdResponse {
+  reportId: string;
+  reportToId: string;
+  reportToName: string;
+  create_at: Date;
+  reportCategoryId: string;
+  reportCategoryName: string;
+  reportDescription: string;
+  reportImage?: string | undefined | null;
+}

@@ -11,11 +11,12 @@ import { CommonModule } from './common/common.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { AttendanceModule } from './attendance/attendance.module';
 import { RtuConfigurationModule } from './rtu-configuration/rtu-configuration.module';
+import { ReportCategoryModule } from './report-category/report-category.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
-    AuthModule, UsersModule, UserRoleModule, ReportsModule, CommonModule, PermissionsModule, AttendanceModule, RtuConfigurationModule],
+    AuthModule, UsersModule, UserRoleModule, ReportsModule, CommonModule, PermissionsModule, AttendanceModule, RtuConfigurationModule, ReportCategoryModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
