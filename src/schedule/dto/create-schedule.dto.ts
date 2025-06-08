@@ -9,13 +9,4 @@ export class CreateScheduleDto {
   @ApiProperty({ example: 'uuid-of-shift', description: 'Shift ID' })
   @IsUUID()
   shiftId: string;
-
-  @ApiProperty({
-    example: '2025-06-08',
-    required: false,
-    description: 'Date for this assignment (defaults to today)',
-  })
-  @IsOptional()
-  @IsDateString()
-  date?: string;
 }

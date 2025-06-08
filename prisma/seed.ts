@@ -31,6 +31,7 @@ async function main() {
         permissionName: 'Attendance Report',
       },
       { permissionCode: 'manage:schedule', permissionName: 'Schedule' },
+      { permissionCode: 'manage:shifts', permissionName: 'Shifts' },
     ],
     skipDuplicates: true,
   });

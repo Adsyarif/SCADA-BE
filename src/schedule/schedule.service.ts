@@ -8,12 +8,10 @@ export class ScheduleService {
     constructor(private prisma: PrismaService) {}
 
     async assign(dto: CreateScheduleDto, currentUserId: string) {
-        const date = dto.date ? new Date(dto.date) : new Date();
         return this.prisma.schedule.create({
             data: {
                 userId: dto.userId,
                 shiftId: dto.shiftId,
-                date,
                 updated_by: currentUserId,
             }
         })
@@ -28,7 +26,6 @@ export class ScheduleService {
         const data: any = { updated_by: currentUserId };
         if (dto.userId) data.userId = dto.userId;
         if (dto.shiftId) data.shiftId = dto.shiftId;
-        if (dto.date) data.date = new Date(dto.date);
 
         return this.prisma.schedule.update({
             where: { id },
@@ -57,7 +54,6 @@ export class ScheduleService {
         return this.prisma.schedule.findMany({
             where: { userId, deleted_at: null},
             include: { shift: true },
-            orderBy: { date: 'desc'}
         })
     }
 
@@ -65,7 +61,6 @@ export class ScheduleService {
         return this.prisma.schedule.findMany({
             where: { shiftId, deleted_at: null },
             include: { user: true },
-            orderBy: { date: 'desc' },
         });
   }
 }

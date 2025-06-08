@@ -31,44 +31,54 @@ export class ShiftsService {
     }
 
     async create(dto: CreateShiftDto, currentUserId: string) {
-        const start= new Date(dto.startTime);
-        const end = new Date(dto.endTime);
-        const shiftName = this.formatShiftName(start, end);
+        const existingCount = await this.prisma.shift.count({
+            where: { deleted_at: null },
+        });
+        const shiftName = `Shift ${existingCount + 1}`;
+
+        const [sh, sm] = dto.startTime.split(':').map(Number);
+        const [eh, em] = dto.endTime.split(':').map(Number);
+        const today = new Date();
+        const start = new Date(today); start.setHours(sh, sm, 0, 0);
+        const end   = new Date(today); end.setHours(eh, em, 0, 0);
 
         return this.prisma.shift.create({
             data: {
                 shiftName,
-                startTime: start,
-                endTime: end,
-                isActive: dto.isActive ?? true,
+                startTime:  start,
+                endTime:    end,
+                isActive:   dto.isActive ?? true,
                 updated_by: currentUserId,
-            }
-        })
+            },
+        });
     }
 
     async update(id: string, dto: UpdateShiftDto, currentUserId: string) {
         const existing = await this.prisma.shift.findUnique({
-            where: { id },
+        where: { id },
         });
-        if (!existing) {
-            throw new NotFoundException(`Shift with ID ${id} not found`);
-        }
+        if (!existing) throw new NotFoundException(`Shift ${id} not found`);
 
-        const start = dto.startTime ? new Date(dto.startTime) : existing.startTime;
-        const end = dto.endTime ? new Date(dto.endTime) : existing.endTime;
+        const [sh, sm] = dto.startTime
+        ? dto.startTime.split(':').map(Number)
+        : [existing.startTime.getHours(), existing.startTime.getMinutes()];
+        const [eh, em] = dto.endTime
+        ? dto.endTime.split(':').map(Number)
+        : [existing.endTime.getHours(),   existing.endTime.getMinutes()];
 
-        const shiftName = this.formatShiftName(start, end);
+        const today = new Date();
+        const start = new Date(today); start.setHours(sh, sm, 0, 0);
+        const end   = new Date(today); end.setHours(eh, em, 0, 0);
 
         return this.prisma.shift.update({
             where: { id },
             data: {
-                startTime: start,
-                endTime: end,
-                shiftName,
-                isActive: dto.isActive ?? existing.isActive,
+                startTime:  start,
+                endTime:    end,
+                isActive:   dto.isActive ?? existing.isActive,
                 updated_by: currentUserId,
-            }
-        })
+            },
+        });
     }
 
     async remove(id: string, currentUserId: string) {
