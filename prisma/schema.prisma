@@ -64,7 +64,6 @@ model User {
   role            UserRole  @relation(fields: [userRoleId], references: [id])
   userSites       UserSite[]
   reportReplies   ReportReply[] @relation("UserReportReplies")
-  schedules    Schedule[]
 
 }
 
@@ -159,6 +158,8 @@ model RtuConfiguration {
   updated_by  String?
   
   userSites   UserSite[]
+  scheduleDefinitions ScheduleDefinition[]
+
 }
 
 model UserSite {
@@ -173,6 +174,7 @@ model UserSite {
 
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   rtuConfiguration RtuConfiguration @relation(fields: [rtuId], references: [id], onDelete: Cascade)
+  scheduleDefinitionUserSites ScheduleDefinitionUserSite[]
 
   @@unique([userId, rtuId], name: "user_site_unique")
 }
@@ -187,21 +189,37 @@ model Shift {
   updated_at  DateTime    @updatedAt @default(now())
   deleted_at  DateTime?
   updated_by  String?
+  scheduleDefinitions ScheduleDefinition[]
 
-  schedules    Schedule[]
 }
 
-model Schedule {
+model ScheduleDefinition {
   id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
+  rtu         RtuConfiguration @relation(fields: [rtuId], references: [id])
+  rtuId       String
   shift       Shift    @relation(fields: [shiftId], references: [id])
   shiftId     String
-
+  daysOfWeek  String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
   deleted_at  DateTime?
   updated_by  String?
 
-  @@unique([userId, shiftId])
+  userSites   ScheduleDefinitionUserSite[]
+
+  @@unique([rtuId, shiftId, daysOfWeek])
+}
+
+model ScheduleDefinitionUserSite {
+  id                     String              @id @default(cuid())
+  scheduleDefinition     ScheduleDefinition  @relation(fields: [scheduleDefinitionId], references: [id])
+  scheduleDefinitionId   String
+  userSite               UserSite            @relation(fields: [userSiteId], references: [id])
+  userSiteId             String
+  created_at             DateTime            @default(now())
+  updated_at             DateTime            @updatedAt
+  deleted_at             DateTime?
+  updated_by             String?
+
+  @@unique([scheduleDefinitionId, userSiteId])
 }
