@@ -216,7 +216,7 @@ model ScheduleDefinitionUserSite {
   id                     String              @id @default(cuid())
   scheduleDefinition     ScheduleDefinition  @relation(fields: [scheduleDefinitionId], references: [id])
   scheduleDefinitionId   String
-  userSite               UserSite            @relation(fields: [userSiteId], references: [id])
+  userSite               UserSite            @relation(fields: [userSiteId], references: [id], onDelete: Cascade)
   userSiteId             String
   created_at             DateTime            @default(now())
   updated_at             DateTime            @updatedAt

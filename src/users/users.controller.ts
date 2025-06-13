@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
   Req,
   UseGuards,
@@ -91,7 +91,7 @@ export class UsersController {
     return this.users.create(dto, currentUserId)
   }
 
-  @Put(':id')
+  @Patch(':id')
   @Permission('manage:users')
   @ApiOperation({ summary: 'Update an existing user' })
   @ApiResponse({ status: 200, description: 'OK' })

@@ -1,5 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateUserDto, RtuAssignmentDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -19,6 +18,7 @@ import { PaginatedUsers } from './types/users-types';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name)
   constructor(
     private prisma: PrismaService,
     private validationService: ValidationService,
@@ -269,6 +269,8 @@ export class UsersService {
        return updatedUser
 
     } catch (error) {
+      this.logger.error(`Error updating user ${id}: ${error.message}`, error.stack)
+
       if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
         const target = (error.meta as any).target.join(', ')
         throw new HttpException(`Unique constraint failed: (${target})`, HttpStatus.BAD_REQUEST);

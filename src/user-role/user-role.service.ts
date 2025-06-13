@@ -4,8 +4,6 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { Prisma } from '@prisma/client';
-import { permission } from 'process';
 
 @Injectable()
 export class UserRoleService {
@@ -19,6 +17,7 @@ export class UserRoleService {
           include: {
             permission: {
               select: {
+                id: true,
                 permissionCode: true,
                 permissionName: true
               }
@@ -46,6 +45,7 @@ export class UserRoleService {
           include: {
             permission: {
               select: {
+                id: true,
                 permissionCode: true,
                 permissionName: true
               }
@@ -63,7 +63,7 @@ export class UserRoleService {
       permissions: r.userRolePermissions.map((urp) => urp.permission),
       createdAt: r.created_at,
       updatedAt: r.updated_at,
-      updatedBy: r.updated_by
+      updatedBy: r.updated_by,
     }
   }
 
