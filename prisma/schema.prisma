@@ -149,7 +149,7 @@ model Attendance {
 
 model RtuConfiguration {
   id          String      @id @default(uuid())
-  rtuEngineId String
+  rtuEngineId String      @unique
   rtuName     String      @unique
   latitude    Float
   longitude   Float
@@ -161,6 +161,7 @@ model RtuConfiguration {
   
   userSites   UserSite[]
   scheduleDefinitions ScheduleDefinition[]
+  dataLoggers DataLogger[]
 
 }
 
@@ -224,4 +225,21 @@ model ScheduleDefinitionUserSite {
   updated_by             String?
 
   @@unique([scheduleDefinitionId, userSiteId])
+}
+
+model DataLogger {
+  id              String          @id @default(uuid())
+  rtuEngineId     String
+  rtu             RtuConfiguration @relation(fields: [rtuEngineId], references: [rtuEngineId])
+  flow_line_dia   Int
+  setting_press   Int
+  tank_cap        Int
+  flow_rate       Int
+  flow_factor     Float
+  tbg_temp        Float
+  tbg_press       Float
+  leu_status      Boolean
+  pump_press      Float
+  tank_level      Float
+  flow_capacity   Float
 }
