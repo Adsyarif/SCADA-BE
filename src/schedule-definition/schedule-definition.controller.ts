@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
@@ -32,7 +32,7 @@ export class ScheduleDefinitionController {
         return this.schedule.create(dto, req.user.id);
     }
 
-    @Put(':id')
+    @Patch(':id')
     @Permission('manage:schedules')
     update(
         @Param('id') id: string,
