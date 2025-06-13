@@ -1,75 +1,72 @@
-import { Attendance } from './../../node_modules/.prisma/client/index.d';
-import { Inject, Injectable } from '@nestjs/common';
-import { ValidationService } from '../common/validation.service';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { PrismaService } from 'src/common/prisma.service';
-import { Logger } from 'winston';
-import {
-  CreateAttendanceRequest,
-  CreateAttendanceResponse,
-  GetAllAttenndanceResponse,
-} from 'src/model/attendance.model';
-import { AttendanceValidation } from './attendance.validation';
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "prisma/prisma.service";
+import { CreateAttendanceRequest } from "./dto/create-attendance.dto";
+import { AttendanceResponse } from "./dto/attendance-response.dto";
+import { getDistanceInMeters } from "src/utils/haversine-formula";
+
 
 @Injectable()
 export class AttendanceService {
-  constructor(
-    private validationService: ValidationService,
-    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
-    private prismaService: PrismaService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  async createAttendance(
-    request: CreateAttendanceRequest,
-  ): Promise<CreateAttendanceResponse> {
-    this.logger.info(`Create new attendance: ${JSON.stringify(request)}`);
+  async toggleAttendance(req: CreateAttendanceRequest, staffId: string): Promise<AttendanceResponse> {
+    const us = await this.prisma.userSite.findFirst({
+      where: { userId: staffId, deleted_at: null },
+      include: { rtuConfiguration : true, user: true }
+    })
 
-    try {
-      const createAttendanceRequest: CreateAttendanceRequest =
-        this.validationService.validate(AttendanceValidation.CREATE, request);
+    if (!us) throw new NotFoundException('User not assigned to any RTU')
+    
+    const { latitude, longitude, radius } = us.rtuConfiguration;
+    const dist = getDistanceInMeters(
+      req.latitude, req.longitude,
+      latitude, longitude
+    )
+    if (dist > radius) {
+      throw new ForbiddenException({
+        message: 'Too far from RTU',
+        distance: Math.round(dist),
+        radius: Math.round(radius)
+      })
+    }
+    const existing = await this.prisma.attendance.findFirst({
+      where: { staff_id: staffId, checked_out: null}
+    })
 
-      const createAttendance = await this.prismaService.attendance.create({
-        data: {
-          staff_id: createAttendanceRequest.staffId,
-        },
-        include: {
-          staff: true,
-        },
-      });
-
+    if (!existing) {
+      const rec = await this.prisma.attendance.create({
+        data: { staff_id: staffId },
+        include: { staff: true }
+      })
       return {
-        staffName: createAttendance?.staff.username,
-        createAt: createAttendance?.created_at,
-      };
-    } catch (error) {
-      this.logger.error(`Error creating attendance: ${error.message}`);
-      throw new Error('Failed to create attendance');
+        staffId: rec.staff_id,
+        staffName: rec.staff.username,
+        createDate: rec.checked_in,
+      }
+    } else {
+      const rec = await this.prisma.attendance.update({
+        where: { id: existing.id },
+        data: { checked_out: new Date() },
+        include: { staff: true }
+      })
+      return {
+        staffId: rec.staff_id,
+        staffName: rec.staff.username,
+        createDate: rec.checked_out!,
+      }
     }
   }
 
-  async getAllAttendance(): Promise<GetAllAttenndanceResponse[]> {
-    this.logger.info(`Get all attendance`);
-
-    try {
-      const allAttendance = await this.prismaService.attendance.findMany({
-        include: {
-          staff: true,
-        },
-        orderBy: {
-          created_at: 'desc',
-        },
-      });
-
-      return allAttendance.map((att) => ({
-        staffId: att.staff_id,
-        staffName: att.staff.username,
-        createDate: att.created_at,
-      }));
-    } catch (error) {
-      this.logger.error(`Failed to get attendance: ${error.message}`);
-      throw new Error('Failed to fetch attendance data');
-    }
+  async getAllCheckIns(): Promise<AttendanceResponse[]> {
+    const all = await this.prisma.attendance.findMany({
+      include: { staff: true },
+      orderBy: { checked_in: 'desc' },
+    });
+    return all.map(rec => ({
+      staffId: rec.staff_id,
+      staffName: rec.staff.username,
+      createDate: rec.checked_out ?? rec.checked_in,
+    }));
   }
 
-  async gettAttendanceByFilter() {}
 }

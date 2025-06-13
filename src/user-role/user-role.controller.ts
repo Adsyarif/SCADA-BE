@@ -59,8 +59,9 @@ export class UserRoleController {
     @ApiOperation({ summary: 'Create a new role' })
     @ApiBody({ type: CreateRoleDto })
     @ApiResponse({ status: 201, description: 'Role created successfully' })
-    create(@Body() dto: CreateRoleDto, ) {
-        return this.roles.create(dto);
+    create(@Body() dto: CreateRoleDto,@Req() req ) {
+        const  currentUserId = req.user.id
+        return this.roles.create(dto, currentUserId);
     }
 
     @Put(':id')
@@ -72,8 +73,10 @@ export class UserRoleController {
     update(
         @Param('id') id: string,
         @Body() dto: UpdateRoleDto,
+        @Req() req
     ) {
-        return this.roles.update(id, dto);
+        const currentUserId = req.user.id
+        return this.roles.update(id, dto, currentUserId);
     }
 
     @Delete(':id')

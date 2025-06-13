@@ -137,12 +137,14 @@ model ReportCategory {
 }
 
 model Attendance {
-  id String @id @default(uuid())
-  staff_id String
-   staff      User     @relation("UserAttendance", fields: [staff_id], references: [id])
-  created_at DateTime @default(now())
-  deleted_at DateTime?
-  updated_at DateTime @updatedAt
+  id          String @id @default(uuid())
+  staff_id    String
+  staff       User     @relation("UserAttendance", fields: [staff_id], references: [id])
+  checked_in  DateTime @default(now())
+  checked_out DateTime?
+  created_at  DateTime @default(now())
+  deleted_at  DateTime?
+  updated_at  DateTime @updatedAt
 }
 
 model RtuConfiguration {
