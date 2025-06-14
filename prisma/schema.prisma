@@ -159,6 +159,8 @@ model RtuConfiguration {
   
   userSites   UserSite[]
   scheduleDefinitions ScheduleDefinition[]
+  spesification RTUSpecification[]
+  logger  DataLogger[]
 
 }
 
@@ -222,4 +224,43 @@ model ScheduleDefinitionUserSite {
   updated_by             String?
 
   @@unique([scheduleDefinitionId, userSiteId])
+}
+
+
+model RTUSpecification {
+  id String   @id @default(cuid())
+  flowellCode String
+  pumpType String
+  tankCapacity Int
+  plungerDiameter Int
+  strokeLength Int
+  maxSettingPress Int
+  flowCapacity Int
+  tankLevel Int
+  RTUConfigId String
+  RTUId String
+  create_at DateTime
+  created_at             DateTime            @default(now())
+  updated_at             DateTime            @updatedAt
+  deleted_at             DateTime?
+  RTU RtuConfiguration @relation(fields: [RTUId], references: [id])
+}
+
+enum RTUStatus {
+ ON
+ OFF
+}
+model DataLogger {
+  id String   @id @default(cuid())
+  created_at             DateTime            @default(now())
+  tubingTemp Int
+  tubingPress Int
+  LEUStatus RTUStatus @default(OFF)
+  settingPress Int
+  pumpPress Int
+  tankLevel Int
+  flowCapacity Int
+  RTUId String
+
+  RTU RtuConfiguration @relation(fields: [RTUId], references: [id])
 }

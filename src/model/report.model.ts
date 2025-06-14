@@ -28,7 +28,6 @@ export class CreateReportRequest {
   reportDescription: string;
 }
 
-
 export class CreateReportResponse {
   reportTo: string;
   reportToId: string;
@@ -91,4 +90,18 @@ export class GetReportByReportIdResponse {
   reportCategoryName: string;
   reportDescription: string;
   reportImage?: string | undefined | null;
+}
+
+export class GetAllReportsResponse {
+  reportId: string;
+  reportToId: string;
+  reportTo: string;
+  reportFromId: string;
+  reportFrom: string;
+  createAt: Date;
+  reportCategoryId: string;
+  reportCategoryName: string;
+  reportDescription: string;
+  reportImage?: string | undefined | null;
+  reportStatus: string;
 }

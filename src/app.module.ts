@@ -14,11 +14,12 @@ import { RtuConfigurationModule } from './rtu-configuration/rtu-configuration.mo
 import { ReportCategoryModule } from './report-category/report-category.module';
 import { ShiftsModule } from './shifts/shifts.module';
 import { ScheduleDefinitionModule } from './schedule-definition/schedule-definition.module';
+import { DataLoggerModule } from './data-logger/data-logger.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
-    AuthModule, UsersModule, UserRoleModule, ReportsModule, CommonModule, PermissionsModule, AttendanceModule, RtuConfigurationModule, ReportCategoryModule, ShiftsModule, ScheduleDefinitionModule],
+    AuthModule, UsersModule, UserRoleModule, ReportsModule, CommonModule, PermissionsModule, AttendanceModule, RtuConfigurationModule, ReportCategoryModule, ShiftsModule, ScheduleDefinitionModule, DataLoggerModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })

@@ -3,6 +3,7 @@ import { ValidationService } from '../common/validation.service';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetAllReportsResponse,
   GetReportByReportIdRequest,
   GetReportByReportIdResponse,
   GetReportsByFilterRequest,
@@ -237,6 +238,38 @@ export class ReportService {
         reportDescription: report.report_description,
         reportImage: report.report_image,
       };
+    } catch (error) {
+      this.logger.error('Error creating report', error);
+      throw new HttpException('Report not found', 404);
+    }
+  }
+
+  async getAllReports(): Promise<GetAllReportsResponse[]> {
+    try {
+      const reports = await this.prismaService.report.findMany({
+        where: {
+          deleted_at: null,
+        },
+        include: {
+          reportCategory: true,
+          reportFrom: true,
+          reportTo: true,
+        },
+      });
+
+      return reports.map((report) => ({
+        reportId: report.id,
+        reportToId: report.reportToId,
+        reportTo: report.reportTo.username,
+        reportFromId: report.reportFromId,
+        reportFrom: report.reportFrom.username,
+        createAt: report.created_at,
+        reportCategoryId: report.reportCategoryId,
+        reportCategoryName: report.reportCategory.category_name,
+        reportDescription: report.report_description,
+        reportImage: report.report_image,
+        reportStatus: report.status,
+      }));
     } catch (error) {
       this.logger.error('Error creating report', error);
       throw new HttpException('Report not found', 404);

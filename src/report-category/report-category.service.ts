@@ -3,7 +3,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 import { Logger } from 'winston';
 import { ValidationService } from 'src/common/validation.service';
-import * as request from 'supertest';
 import {
   CreateReportCategoryRequest,
   CreateReportCategoryResponse,

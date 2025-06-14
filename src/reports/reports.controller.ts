@@ -12,6 +12,7 @@ import { WebResponse } from 'src/model/web.model';
 import {
   CreateReportRequest,
   CreateReportResponse,
+  GetAllReportsResponse,
   GetReportByReportIdRequest,
   GetReportByReportIdResponse,
   GetReportsByFilterRequest,
@@ -103,6 +104,15 @@ export class ReportController {
 
     return {
       data: reports,
+    };
+  }
+
+  @Get('/all')
+  @HttpCode(200)
+  async getAllReports(): Promise<WebResponse<GetAllReportsResponse[]>> {
+    const result = await this.reportService.getAllReports();
+    return {
+      data: result,
     };
   }
 }
