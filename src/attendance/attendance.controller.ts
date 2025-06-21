@@ -15,7 +15,8 @@ export class AttendanceController {
 
   @Post('toggle')
   toggle(@Body() dto: CreateAttendanceRequest, @Req() req) {
-    return this.attendance.toggleAttendance(dto, req.user.id)
+    const staffId = (req.user as any).userId
+    return this.attendance.toggleAttendance(dto, staffId)
   }
 
   @Get('all')
