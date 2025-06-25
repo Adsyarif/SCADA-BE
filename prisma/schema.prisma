@@ -86,6 +86,7 @@ enum ReportStatus {
   APPROVED
   REJECTED
   REVISION
+  CLOSED
 }
 model Report {
   id                String          @id @default(uuid())

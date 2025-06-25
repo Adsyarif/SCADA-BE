@@ -1,5 +1,4 @@
-import { UserRolePermission } from './../node_modules/.prisma/client/index.d';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ReportStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -41,6 +40,14 @@ async function main() {
     update: {},
     create: {
       roleName: 'Master Admin',
+    },
+  });
+
+  const supervisorRole = await prisma.userRole.upsert({
+    where: { roleName: 'supervisor' },
+    update: {},
+    create: {
+      roleName: 'supervisor',
     },
   });
 
@@ -94,6 +101,17 @@ async function main() {
       prisma.userRolePermission.create({
         data: {
           userRoleId: userRole.id,
+          permissionId: permission.id,
+        },
+      }),
+    ),
+  );
+
+  await prisma.$transaction(
+    allPermissions.map((permission) =>
+      prisma.userRolePermission.create({
+        data: {
+          userRoleId: supervisorRole.id,
           permissionId: permission.id,
         },
       }),
@@ -200,7 +218,7 @@ async function main() {
       password: supervisorPassword,
       phone_number: '+6281122334455',
       employee_number: 'EMP004',
-      userRoleId: userRole.id,
+      userRoleId: supervisorRole.id,
     },
   });
 
@@ -283,6 +301,246 @@ async function main() {
       roleName: 'Customer User',
     },
   });
+
+  const staff1Password = await bcrypt.hash('staff1123', 10);
+  const staff1 = await prisma.user.upsert({
+    where: { email: 'staff1@scada.com' },
+    update: {},
+    create: {
+      username: 'staff1_user',
+      email: 'staff1@scada.com',
+      password: staff1Password,
+      phone_number: '+6281122334456',
+      employee_number: 'EMP006',
+      userRoleId: userRole.id,
+    },
+  });
+
+  const staff2Password = await bcrypt.hash('staff2123', 10);
+  const staff2 = await prisma.user.upsert({
+    where: { email: 'staff2@scada.com' },
+    update: {},
+    create: {
+      username: 'staff2_user',
+      email: 'staff2@scada.com',
+      password: staff2Password,
+      phone_number: '+6281122334457',
+      employee_number: 'EMP007',
+      userRoleId: userRole.id,
+    },
+  });
+
+  const supervisor1Password = await bcrypt.hash('supervisor1123', 10);
+  const supervisor1 = await prisma.user.upsert({
+    where: { email: 'supervisor1@scada.com' },
+    update: {},
+    create: {
+      username: 'supervisor1_user',
+      email: 'supervisor1@scada.com',
+      password: supervisor1Password,
+      phone_number: '+6281122334458',
+      employee_number: 'EMP008',
+      userRoleId: supervisorRole.id,
+    },
+  });
+
+  await prisma.userSupervisor.createMany({
+    data: [
+      {
+        staffId: staff1.id,
+        supervisorId: supervisor1.id,
+      },
+      {
+        staffId: staff2.id,
+        supervisorId: supervisor1.id,
+      },
+      {
+        staffId: staffUser.id,
+        supervisorId: supervisor1.id,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  const performanceCategory = await prisma.reportCategory.upsert({
+    where: { category_name: 'Performance Issue' },
+    update: {},
+    create: {
+      category_name: 'Performance Issue',
+    },
+  });
+
+  const safetyCategory = await prisma.reportCategory.upsert({
+    where: { category_name: 'Safety Concern' },
+    update: {},
+    create: {
+      category_name: 'Safety Concern',
+    },
+  });
+
+  const technicalCategory = await prisma.reportCategory.upsert({
+    where: { category_name: 'Techincal Concern' },
+    update: {},
+    create: {
+      category_name: 'Techincal Concern',
+    },
+  });
+
+  const report1 = await prisma.report.create({
+    data: {
+      reportToId: supervisor1.id,
+      reportFromId: staff1.id,
+      reportCategoryId: performanceCategory.id,
+      report_description:
+        'Saya menemukan performa mesin RTU-01 menurun drastis sejak kemarin.',
+      status: ReportStatus.PENDING,
+    },
+  });
+
+  const report2 = await prisma.report.create({
+    data: {
+      reportToId: supervisor1.id,
+      reportFromId: staff2.id,
+      reportCategoryId: safetyCategory.id,
+      report_description:
+        'Ada kebocoran gas di area RTU-03, perlu penanganan segera!',
+      status: ReportStatus.PENDING,
+    },
+  });
+
+  const report3 = await prisma.report.create({
+    data: {
+      reportToId: supervisor1.id,
+      reportFromId: staffUser.id,
+      reportCategoryId: technicalCategory.id,
+      report_description:
+        'Sensor tekanan di RTU-05 menunjukkan angka tidak stabil.',
+      status: ReportStatus.APPROVED,
+    },
+  });
+
+  const reply1_1 = await prisma.reportReply.create({
+    data: {
+      reportId: report1.id,
+      userId: supervisor1.id,
+      message: 'Terima kasih laporannya. Sudah dicek parameter apa saja?',
+      created_at: new Date('2023-05-01T10:00:00Z'),
+    },
+  });
+
+  const reply1_2 = await prisma.reportReply.create({
+    data: {
+      reportId: report1.id,
+      userId: staff1.id,
+      parentReplyId: reply1_1.id,
+      message:
+        'Sudah saya cek flow rate dan pressure, keduanya di bawah normal.',
+      created_at: new Date('2023-05-01T11:30:00Z'),
+    },
+  });
+
+  const reply1_3 = await prisma.reportReply.create({
+    data: {
+      reportId: report1.id,
+      userId: supervisor1.id,
+      parentReplyId: reply1_2.id,
+      message: 'Baik, saya akan kirim tim maintenance untuk cek lebih lanjut.',
+      created_at: new Date('2023-05-01T13:15:00Z'),
+    },
+  });
+
+  const reply2_1 = await prisma.reportReply.create({
+    data: {
+      reportId: report2.id,
+      userId: supervisor1.id,
+      message:
+        'Laporan diterima! Tim evakuasi sedang menuju lokasi. Mohon jauhi area tersebut!',
+      created_at: new Date('2023-05-02T09:05:00Z'),
+    },
+  });
+
+  const reply2_2 = await prisma.reportReply.create({
+    data: {
+      reportId: report2.id,
+      userId: staff2.id,
+      message: 'Sudah saya evakuasi area dan pasang tanda bahaya.',
+      created_at: new Date('2023-05-02T09:20:00Z'),
+    },
+  });
+
+  const reply3_1 = await prisma.reportReply.create({
+    data: {
+      reportId: report3.id,
+      userId: supervisor1.id,
+      message: 'Sensor sudah diganti dan berfungsi normal?',
+      created_at: new Date('2023-05-03T14:00:00Z'),
+    },
+  });
+
+  const reply3_2 = await prisma.reportReply.create({
+    data: {
+      reportId: report3.id,
+      userId: staffUser.id,
+      parentReplyId: reply3_1.id,
+      message:
+        'Sudah normal kembali. Kalibrasi terakhir menunjukkan akurasi 99%.',
+      created_at: new Date('2023-05-03T15:30:00Z'),
+    },
+  });
+
+  const report4 = await prisma.report.create({
+    data: {
+      reportToId: supervisor1.id,
+      reportFromId: staff2.id,
+      reportCategoryId: performanceCategory.id,
+      report_description:
+        'Ada anomaly pada data logger RTU-02 sejak update terakhir.',
+      status: ReportStatus.REVISION,
+    },
+  });
+
+  const reply4_1 = await prisma.reportReply.create({
+    data: {
+      reportId: report4.id,
+      userId: supervisor1.id,
+      message: 'Bisa dijelaskan lebih detail anomaly yang dimaksud?',
+      created_at: new Date('2023-05-04T08:00:00Z'),
+    },
+  });
+
+  const reply4_2 = await prisma.reportReply.create({
+    data: {
+      reportId: report4.id,
+      userId: staff2.id,
+      parentReplyId: reply4_1.id,
+      message:
+        'Data flow rate melompat-lompat padahal tidak ada perubahan pada flow actual.',
+      created_at: new Date('2023-05-04T09:15:00Z'),
+    },
+  });
+
+  const reply4_3 = await prisma.reportReply.create({
+    data: {
+      reportId: report4.id,
+      userId: supervisor1.id,
+      parentReplyId: reply4_2.id,
+      message: 'Mohon screenshot grafiknya untuk 24 jam terakhir.',
+      created_at: new Date('2023-05-04T10:30:00Z'),
+    },
+  });
+
+  const reply4_4 = await prisma.reportReply.create({
+    data: {
+      reportId: report4.id,
+      userId: staff2.id,
+      parentReplyId: reply4_3.id,
+      message:
+        'Berikut grafiknya: [image-link]. Terlihat spike tidak wajar setiap 2 jam.',
+      created_at: new Date('2023-05-04T11:45:00Z'),
+    },
+  });
+
+  console.log('Seeding completed!');
 }
 
 main()

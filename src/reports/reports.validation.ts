@@ -28,4 +28,15 @@ export class ReportValidation {
   static readonly GET_REPORT_BY_REPORT_ID: ZodType = z.object({
     reportId: z.string().min(1).max(100),
   });
+
+  static readonly CREATE_REPLY: ZodType = z.object({
+    reportId: z.string().min(1).max(100),
+    userId: z.string().min(1).max(100),
+    message: z.string().min(1).max(2000),
+    parentReplyId: z.string().min(1).max(100).optional().nullable(),
+  });
+
+  static readonly GET_REPLIES: ZodType = z.object({
+    reportId: z.string().min(1).max(100),
+  });
 }

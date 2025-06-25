@@ -5,6 +5,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ReportService } from './reports.service';
@@ -23,6 +24,13 @@ import {
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
+import {
+  CreateReportReplyRequest,
+  CreateReportReplyResponse,
+  GetRepliesByReportIdRequest,
+  GetRepliesByReportIdResponse,
+} from 'src/model/report.reply.model';
+import { User } from '@prisma/client';
 
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('/api/reports')
@@ -103,6 +111,87 @@ export class ReportController {
 
     return {
       data: reports,
+    };
+  }
+
+  @Post('/:reportId/replies')
+  async createReply(
+    @Param('reportId') reportId: string,
+    @Body() request: Omit<CreateReportReplyRequest, 'reportId'>,
+    user: User,
+  ): Promise<WebResponse<CreateReportReplyResponse>> {
+    const createRequest: CreateReportReplyRequest = {
+      reportId,
+      userId: user.id,
+      message: request.message,
+      parentReplyId: request.parentReplyId,
+    };
+
+    const result = await this.reportService.createReply(createRequest);
+    return {
+      data: result,
+    };
+  }
+
+  @Get('/:reportId/replies')
+  async getReplies(
+    @Param('reportId') reportId: string,
+  ): Promise<WebResponse<GetRepliesByReportIdResponse>> {
+    const request: GetRepliesByReportIdRequest = {
+      reportId,
+    };
+
+    const result = await this.reportService.getRepliesByReportId(request);
+    return {
+      data: result,
+    };
+  }
+
+  @Put('/:reportId/approve')
+  async approveReport(
+    @Param('reportId') reportId: string,
+    @Body() body: { userId: string },
+  ): Promise<WebResponse<string>> {
+    await this.reportService.updateReportStatus(
+      reportId,
+      'APPROVED',
+      body.userId,
+    );
+    return {
+      data: 'Report approved',
+    };
+  }
+
+  @Put('/:reportId/reject')
+  async rejectReport(
+    @Param('reportId') reportId: string,
+    user: User,
+  ): Promise<WebResponse<string>> {
+    await this.reportService.updateReportStatus(reportId, 'REJECTED', user.id);
+    return {
+      data: 'Report rejected',
+    };
+  }
+
+  @Put('/:reportId/request-revision')
+  async requestRevision(
+    @Param('reportId') reportId: string,
+    user: User,
+  ): Promise<WebResponse<string>> {
+    await this.reportService.updateReportStatus(reportId, 'REVISION', user.id);
+    return {
+      data: 'Report need revision',
+    };
+  }
+
+  @Put('/:reportId/close')
+  async closeReport(
+    @Param('reportId') reportId: string,
+    user: User,
+  ): Promise<WebResponse<string>> {
+    await this.reportService.updateReportStatus(reportId, 'CLOSED', user.id);
+    return {
+      data: 'Report closed',
     };
   }
 }
