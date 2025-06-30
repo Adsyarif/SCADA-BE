@@ -28,7 +28,6 @@ export class CreateReportRequest {
   reportDescription: string;
 }
 
-
 export class CreateReportResponse {
   reportTo: string;
   reportToId: string;
@@ -62,6 +61,7 @@ export class GetReportsByIdResponse {
   reportCategory: string;
   reportDescription: string;
   status: string;
+  replies: any[];
 }
 
 export class GetReportsByFilterRequest {
@@ -86,9 +86,12 @@ export class GetReportByReportIdResponse {
   reportId: string;
   reportToId: string;
   reportToName: string;
+  reportFromId: string;
   create_at: Date;
   reportCategoryId: string;
   reportCategoryName: string;
   reportDescription: string;
   reportImage?: string | undefined | null;
+  replies: any[];
+  status: string;
 }

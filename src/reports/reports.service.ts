@@ -138,6 +138,7 @@ export class ReportService {
         reportTo: true,
         reportFrom: true,
         reportCategory: true,
+        replies: true,
       },
     });
 
@@ -154,6 +155,7 @@ export class ReportService {
       reportCategory: report.reportCategory.category_name,
       reportDescription: report.report_description,
       status: report.status,
+      replies: report.replies,
     }));
   }
 
@@ -227,6 +229,7 @@ export class ReportService {
           reportCategory: true,
           reportFrom: true,
           reportTo: true,
+          replies: true,
         },
       });
 
@@ -236,13 +239,16 @@ export class ReportService {
 
       return {
         reportId: report.id,
-        reportToId: report.reportTo.username,
+        reportToId: report.reportTo.id,
         reportToName: report.reportTo.username,
+        reportFromId: report.reportFromId,
         create_at: report.created_at,
         reportCategoryId: report.reportCategoryId,
         reportCategoryName: report.reportCategory.category_name,
         reportDescription: report.report_description,
         reportImage: report.report_image,
+        replies: report.replies,
+        status: report.status,
       };
     } catch (error) {
       this.logger.error('Error creating report', error);
