@@ -17,7 +17,14 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ReportValidation } from './reports.validation';
 import { PrismaService } from 'src/common/prisma.service';
 import { GetReportCategoryResponse } from 'src/model/reportCategory.model';
-import * as request from 'supertest';
+import {
+  CreateReportReplyRequest,
+  CreateReportReplyResponse,
+  GetRepliesByReportIdRequest,
+  GetRepliesByReportIdResponse,
+  ReplyDetail,
+} from 'src/model/report.reply.model';
+import { ReportStatus } from '@prisma/client';
 
 @Injectable()
 export class ReportService {
@@ -131,6 +138,7 @@ export class ReportService {
         reportTo: true,
         reportFrom: true,
         reportCategory: true,
+        replies: true,
       },
     });
 
@@ -147,6 +155,7 @@ export class ReportService {
       reportCategory: report.reportCategory.category_name,
       reportDescription: report.report_description,
       status: report.status,
+      replies: report.replies,
     }));
   }
 
@@ -220,6 +229,7 @@ export class ReportService {
           reportCategory: true,
           reportFrom: true,
           reportTo: true,
+          replies: true,
         },
       });
 
@@ -229,17 +239,190 @@ export class ReportService {
 
       return {
         reportId: report.id,
-        reportToId: report.reportTo.username,
+        reportToId: report.reportTo.id,
         reportToName: report.reportTo.username,
+        reportFromId: report.reportFromId,
         create_at: report.created_at,
         reportCategoryId: report.reportCategoryId,
         reportCategoryName: report.reportCategory.category_name,
         reportDescription: report.report_description,
         reportImage: report.report_image,
+        replies: report.replies,
+        status: report.status,
       };
     } catch (error) {
       this.logger.error('Error creating report', error);
       throw new HttpException('Report not found', 404);
+    }
+  }
+
+  async createReply(
+    request: CreateReportReplyRequest,
+  ): Promise<CreateReportReplyResponse> {
+    try {
+      this.logger.info(`Creating new reply: ${JSON.stringify(request)}`);
+
+      const createReplyRequest: CreateReportReplyRequest =
+        this.validationService.validate(ReportValidation.CREATE_REPLY, request);
+
+      const reportExists = await this.prismaService.report.findUnique({
+        where: { id: createReplyRequest.reportId },
+      });
+
+      if (!reportExists) {
+        throw new HttpException('Report not found', 404);
+      }
+
+      if (createReplyRequest.parentReplyId) {
+        const parentReplyExists =
+          await this.prismaService.reportReply.findUnique({
+            where: { id: createReplyRequest.parentReplyId },
+          });
+
+        if (!parentReplyExists) {
+          throw new HttpException('Parent reply not found', 404);
+        }
+      }
+
+      const reply = await this.prismaService.reportReply.create({
+        data: {
+          reportId: createReplyRequest.reportId,
+          userId: createReplyRequest.userId,
+          message: createReplyRequest.message,
+          parentReplyId: createReplyRequest.parentReplyId || null,
+        },
+      });
+
+      return {
+        replyId: reply.id,
+        createdAt: reply.created_at,
+      };
+    } catch (error) {
+      this.logger.error('Error creating reply', error);
+      throw new HttpException('Failed to create reply', 500);
+    }
+  }
+
+  async getRepliesByReportId(
+    request: GetRepliesByReportIdRequest,
+  ): Promise<GetRepliesByReportIdResponse> {
+    try {
+      this.logger.info(
+        `Getting replies for report: ${JSON.stringify(request)}`,
+      );
+
+      const getRepliesRequest: GetRepliesByReportIdRequest =
+        this.validationService.validate(ReportValidation.GET_REPLIES, request);
+
+      const reportExists = await this.prismaService.report.findUnique({
+        where: { id: getRepliesRequest.reportId },
+      });
+
+      if (!reportExists) {
+        throw new HttpException('Report not found', 404);
+      }
+
+      const replies = await this.prismaService.reportReply.findMany({
+        where: {
+          reportId: getRepliesRequest.reportId,
+        },
+        orderBy: {
+          created_at: 'asc',
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      const replyMap = new Map<string, ReplyDetail>();
+      const rootReplies: ReplyDetail[] = [];
+
+      for (const reply of replies) {
+        const replyDetail: ReplyDetail = {
+          replyId: reply.id,
+          userId: reply.userId,
+          username: reply.user.username,
+          message: reply.message,
+          parentReplyId: reply.parentReplyId || undefined,
+          createdAt: reply.created_at,
+          replies: [],
+        };
+
+        replyMap.set(reply.id, replyDetail);
+
+        if (!reply.parentReplyId) {
+          rootReplies.push(replyDetail);
+        }
+      }
+
+      for (const reply of replies) {
+        if (reply.parentReplyId) {
+          const parent = replyMap.get(reply.parentReplyId);
+          if (parent) {
+            const childReply = replyMap.get(reply.id);
+            if (childReply) {
+              parent.replies.push(childReply);
+            }
+          }
+        }
+      }
+
+      return {
+        replies: rootReplies,
+      };
+    } catch (error) {
+      this.logger.error('Error getting replies', error);
+      throw new HttpException('Failed to get replies', 500);
+    }
+  }
+
+  async updateReportStatus(
+    reportId: string,
+    status: ReportStatus,
+    userId: string,
+  ): Promise<void> {
+    try {
+      this.logger.info(`Updating report ${reportId} status to ${status}`);
+
+      const report = await this.prismaService.report.findUnique({
+        where: { id: reportId },
+        include: {
+          reportFrom: {
+            include: {
+              asStaffIn: {
+                where: {
+                  supervisorId: userId,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!report) {
+        throw new HttpException('Report not found', 404);
+      }
+
+      if (report.reportFrom.asStaffIn.length === 0) {
+        throw new HttpException('Unauthorized to update this report', 403);
+      }
+
+      await this.prismaService.report.update({
+        where: { id: reportId },
+        data: {
+          status,
+          updated_by: userId,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Error updating report status', error);
+      throw new HttpException('Failed to update report status', 500);
     }
   }
 }

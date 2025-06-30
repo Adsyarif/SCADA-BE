@@ -17,9 +17,11 @@ export interface GetRepliesByReportIdRequest {
 export interface ReplyDetail {
   replyId: string;
   userId: string;
+  username: string;
   message: string;
   parentReplyId?: string;
   createdAt: Date;
+  replies: ReplyDetail[];
 }
 
 export interface GetRepliesByReportIdResponse {
