@@ -21,7 +21,6 @@ export class ShiftsController {
     }
 
     @Get(':id')
-    @Permission('manage:shifts')
     findOne(@Param('id') id: string) {
         return this.shiftsService.findOne(id);
     }

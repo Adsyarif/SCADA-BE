@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
-import { WebResponse } from 'src/model/web.model';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/decorators/jwt-auth.guard';
 import { PermissionsGuard } from 'src/auth/guards/permissions.guard';
 import { CreateAttendanceRequest } from './dto/create-attendance.dto';
+import { AttendanceInitDto } from './dto/attendance-init.dto';
 
 @ApiTags('Attendance')
 @ApiBearerAuth('access_token')
@@ -12,6 +12,12 @@ import { CreateAttendanceRequest } from './dto/create-attendance.dto';
 @Controller('attendance')
 export class AttendanceController {
   constructor(private attendance: AttendanceService) {}
+
+  @Get('init')
+  getInit(@Req() req): Promise<AttendanceInitDto> {
+    const staffId = (req.user as any).userId;
+    return this.attendance.getInit(staffId);
+  }
 
   @Post('toggle')
   toggle(@Body() dto: CreateAttendanceRequest, @Req() req) {
