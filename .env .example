@@ -8,3 +8,7 @@ DATABASE_URL="postgresql://postgres:admin@123@localhost:5432/scada-db-5"
 JWT_SECRET=emberpecah2025 
 PORT=3500
 RTU_API_KEY=sangatrahasia9999
+
+POSTGRES_USER=nestjs_user
+POSTGRES_PASSWORD=supersecret
+POSTGRES_DB=nestjs_db
