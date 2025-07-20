@@ -1,7 +1,7 @@
 # ──────────────────────
 # 1) Build stage
 # ──────────────────────
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Install deps, generate Prisma client, build your Nest app
@@ -13,7 +13,7 @@ RUN npx prisma generate && npm run build
 # ──────────────────────
 # 2) Runtime stage
 # ──────────────────────
-FROM node:18-alpine
+FROM node:22-alpine
 WORKDIR /app
 
 # Copy over only what we need
