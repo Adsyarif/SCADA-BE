@@ -1,25 +1,47 @@
-# ──────────────────────
-# 1) Build stage
-# ──────────────────────
+# Use official Node.js image for building
 FROM node:22-alpine AS builder
-WORKDIR /app
 
-# Install deps, generate Prisma client, build your Nest app
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy package files and Prisma schema
 COPY package*.json ./
-RUN npm ci
+COPY prisma ./prisma/
+
+# Install dependencies including devDependencies
+RUN npm install --force
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Copy all source files
 COPY . .
-RUN npx prisma generate && npm run build
 
-# ──────────────────────
-# 2) Runtime stage
-# ──────────────────────
+# Build the application
+RUN npm run build
+
+# Remove development dependencies
+RUN npm prune --production
+
+# Create final production image
 FROM node:22-alpine
-WORKDIR /app
 
-# Copy over only what we need
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/dist         /app/dist
-COPY --from=builder /app/prisma       /app/prisma
+# Install dependencies for Prisma and Postgres
+RUN apk add --no-cache openssl
 
-EXPOSE 3000
-CMD ["node", "dist/main"]
+WORKDIR /usr/src/app
+
+# Copy runtime dependencies from builder
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/package*.json ./
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/prisma ./prisma
+
+RUN ls -l dist
+
+# Expose application port
+ENV PORT=3500
+EXPOSE $PORT
+
+# Migrate database and start application
+CMD npx prisma migrate deploy && node dist/src/main.js
