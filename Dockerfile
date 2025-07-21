@@ -14,6 +14,9 @@ RUN npm install --force
 # Generate Prisma client
 RUN npx prisma generate
 
+# Seed database
+RUN npm run seed
+
 # Copy all source files
 COPY . .
 
